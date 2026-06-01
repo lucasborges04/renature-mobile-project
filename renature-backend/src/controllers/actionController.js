@@ -79,6 +79,21 @@ const actionController = {
         .json({ message: "Erro interno no servidor ao registrar a ação." });
     }
   },
+
+  async getHistory(req, res) {
+    try {
+      const history = await Action.find({ user: req.user._id })
+        .sort({ createdAt: -1 })
+        .limit(50);
+
+      res.json(history);
+    } catch (error) {
+      console.error("Erro ao buscar histórico:", error);
+      res
+        .status(500)
+        .json({ message: "Erro interno ao buscar histórico de ações." });
+    }
+  },
 };
 
 module.exports = actionController;
