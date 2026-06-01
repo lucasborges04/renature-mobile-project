@@ -1,0 +1,84 @@
+const Action = require("../models/Action");
+const User = require("../models/User");
+
+const actionController = {
+  async registerScan(req, res) {
+    try {
+      const { itemType, description } = req.body;
+
+      if (!itemType) {
+        return res
+          .status(400)
+          .json({ message: "O tipo de item é obrigatório." });
+      }
+
+      let pointsEarned = 0;
+      switch (itemType) {
+        case "Plástico":
+          pointsEarned = 10;
+          break;
+        case "Papel":
+          pointsEarned = 5;
+          break;
+        case "Vidro":
+          pointsEarned = 15;
+          break;
+        case "Metal":
+          pointsEarned = 20;
+          break;
+        case "Eletrônico":
+          pointsEarned = 50;
+          break;
+        case "Orgânico":
+          pointsEarned = 5;
+          break;
+        default:
+          pointsEarned = 2;
+          break;
+      }
+
+      const action = await Action.create({
+        user: req.user._id,
+        itemType,
+        pointsEarned,
+        description: description || `Reciclagem de ${itemType}`,
+      });
+
+      const user = await User.findById(req.user._id);
+
+      user.points += pointsEarned;
+      user.xp += pointsEarned;
+
+      let levelUpMessage = null;
+      const xpNeededForNextLevel = user.level * 100;
+
+      if (user.xp >= xpNeededForNextLevel) {
+        user.level += 1;
+        user.xp = user.xp - xpNeededForNextLevel;
+        levelUpMessage = `Parabéns! Você alcançou o Nível ${user.level}!`;
+      }
+
+      await user.save();
+
+      res.status(201).json({
+        message: "Ação registrada com sucesso!",
+        pointsEarned,
+        levelUpMessage,
+        userProgress: {
+          points: user.points,
+          level: user.level,
+          xp: user.xp,
+          nextLevelXp: user.level * 100,
+        },
+        action,
+      });
+    } catch (error) {
+      console.error("Erro ao registrar ação:", error);
+      res
+        .status(500)
+        .json({ message: "Erro interno no servidor ao registrar a ação." });
+    }
+  },
+};
+
+module.exports = actionController;
