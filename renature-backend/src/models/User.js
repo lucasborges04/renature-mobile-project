@@ -13,12 +13,17 @@ const UserSchema = new mongoose.Schema(
       required: [true, "O email é obrigatório"],
       unique: true,
       lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Por favor, use um email válido"],
       trim: true,
     },
     password: {
       type: String,
-      required: [true, "A senha é obrigatória"],
       minlength: [8, "A senha deve ter no mínimo 8 caracteres"],
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
     },
     avatar: {
       type: String,
