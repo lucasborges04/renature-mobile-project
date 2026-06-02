@@ -37,6 +37,12 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    unlockedAchievements: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Achievement",
+      },
+    ],
   },
   {
     timestamps: true,

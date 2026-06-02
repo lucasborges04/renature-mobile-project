@@ -11,15 +11,7 @@ const ActionSchema = new mongoose.Schema(
     itemType: {
       type: String,
       required: [true, "O tipo de item é obrigatório"],
-      enum: [
-        "Plástico",
-        "Papel",
-        "Vidro",
-        "Metal",
-        "Orgânico",
-        "Eletrônico",
-        "Outro",
-      ],
+      enum: ["Plástico", "Papel", "Vidro", "Metal", "Orgânico", "Eletrônico"],
     },
 
     pointsEarned: {

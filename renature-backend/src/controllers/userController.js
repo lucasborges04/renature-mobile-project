@@ -3,7 +3,9 @@ const User = require("../models/User");
 const userController = {
   async getProfile(req, res) {
     try {
-      const user = await User.findById(req.user._id).select("-password");
+      const user = await User.findById(req.user._id)
+        .select("-password")
+        .populate("unlockedAchievements");
 
       if (user) {
         res.json(user);

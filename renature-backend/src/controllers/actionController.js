@@ -1,5 +1,6 @@
 const Action = require("../models/Action");
 const User = require("../models/User");
+const achievementService = require("../services/achievementService");
 
 const actionController = {
   async registerScan(req, res) {
@@ -60,10 +61,18 @@ const actionController = {
 
       await user.save();
 
+      const unlockedAchievements = await achievementService.checkAchievements(
+        req.user._id,
+        itemType,
+        user.points,
+        user.level,
+      );
+
       res.status(201).json({
         message: "Ação registrada com sucesso!",
         pointsEarned,
         levelUpMessage,
+        newlyUnlockedAchievements: unlockedAchievements,
         userProgress: {
           points: user.points,
           level: user.level,
