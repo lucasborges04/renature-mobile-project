@@ -5,6 +5,8 @@ const { protect } = require("../middlewares/authMiddleware");
 
 router.post("/scan", protect, actionController.registerScan);
 
+router.post("/barcode", protect, actionController.registerBarcodeScan);
+
 router.get("/history", protect, actionController.getHistory);
 
 module.exports = router;

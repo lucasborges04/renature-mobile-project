@@ -2,6 +2,15 @@ const Action = require("../models/Action");
 const User = require("../models/User");
 const achievementService = require("../services/achievementService");
 
+const barcodeDB = {
+  7897322709376: { itemType: "Plástico", description: "Produto Teste Scanner" },
+  7894900011517: {
+    itemType: "Metal",
+    description: "Lata de Refrigerante 350ml",
+  },
+  7891010902105: { itemType: "Plástico", description: "Garrafa de Água 500ml" },
+};
+
 const actionController = {
   async registerScan(req, res) {
     try {
@@ -86,6 +95,99 @@ const actionController = {
       res
         .status(500)
         .json({ message: "Erro interno no servidor ao registrar a ação." });
+    }
+  },
+
+  async registerBarcodeScan(req, res) {
+    try {
+      const { barcode } = req.body;
+
+      if (!barcode) {
+        return res
+          .status(400)
+          .json({ message: "O código de barras é obrigatório." });
+      }
+
+      const product = barcodeDB[barcode];
+
+      if (!product) {
+        return res
+          .status(404)
+          .json({ message: "Produto não encontrado em nossa base de dados." });
+      }
+
+      const { itemType, description } = product;
+
+      let pointsEarned = 0;
+      switch (itemType) {
+        case "Plástico":
+          pointsEarned = 10;
+          break;
+        case "Papel":
+          pointsEarned = 5;
+          break;
+        case "Vidro":
+          pointsEarned = 15;
+          break;
+        case "Metal":
+          pointsEarned = 20;
+          break;
+        case "Eletrônico":
+          pointsEarned = 50;
+          break;
+        case "Orgânico":
+          pointsEarned = 5;
+          break;
+        default:
+          pointsEarned = 2;
+          break;
+      }
+
+      const action = await Action.create({
+        user: req.user._id,
+        itemType,
+        pointsEarned,
+        description,
+      });
+
+      const user = await User.findById(req.user._id);
+      user.points += pointsEarned;
+      user.xp += pointsEarned;
+
+      let levelUpMessage = null;
+      const xpNeededForNextLevel = user.level * 100;
+
+      if (user.xp >= xpNeededForNextLevel) {
+        user.level += 1;
+        user.xp = user.xp - xpNeededForNextLevel;
+        levelUpMessage = `Parabéns! Você alcançou o Nível ${user.level}!`;
+      }
+
+      await user.save();
+
+      const unlockedAchievements = await achievementService.checkAchievements(
+        req.user._id,
+        itemType,
+        user.points,
+        user.level,
+      );
+
+      res.status(200).json({
+        message: "Código lido com sucesso!",
+        item: description,
+        pointsEarned,
+        levelUpMessage,
+        newlyUnlockedAchievements: unlockedAchievements,
+        userProgress: {
+          points: user.points,
+          level: user.level,
+        },
+      });
+    } catch (error) {
+      console.error("Erro ao processar código de barras:", error);
+      res
+        .status(500)
+        .json({ message: "Erro interno ao processar o código de barras." });
     }
   },
 
