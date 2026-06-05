@@ -15,16 +15,21 @@ export const recyclingService = {
 
   // Envia o registro manual com o tipo de material selecionado
   async recycleManual(
-    materialType:
-      | "plastic"
-      | "glass"
-      | "paper"
-      | "metal"
-      | "organic"
-      | "electronic",
+    itemType:
+      | "Plástico"
+      | "Vidro"
+      | "Papel"
+      | "Metal"
+      | "Eletrônico"
+      | "Orgânico",
+    description: string,
   ) {
     try {
-      const response = await api.post("/actions/scan", { materialType });
+      // Agora enviamos 'itemType' (ex: "Plástico") e a 'description' (ex: "Garrafa de Suco")
+      const response = await api.post("/actions/scan", {
+        itemType,
+        description,
+      });
       return response.data;
     } catch (error: any) {
       throw new Error(

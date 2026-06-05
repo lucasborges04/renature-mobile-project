@@ -243,9 +243,7 @@ export function ScannerScreen({
         <AppButton
           icon={Edit3}
           label="Adicionar Manualmente"
-          onPress={() =>
-            Alert.alert("Em breve", "Iremos criar o fluxo manual!")
-          }
+          onPress={() => onNavigate("manual")}
         />
       )}
 
