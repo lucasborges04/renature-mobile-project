@@ -2,163 +2,179 @@ import {
   AlertTriangle,
   ArrowLeft,
   Bookmark,
-  CheckCircle2,
-  Clock3,
-  Droplets,
-  Package,
   Share2,
-  Trash2,
-} from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+  CheckCircle2,
+} from "lucide-react-native";
+import { Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
 
-import { AppScreen } from '../components/app-screen';
-import { AppButton, SectionHeading, SurfaceCard, StatPill } from '../components/primitives';
+import { AppScreen } from "../components/app-screen";
 import {
-  detailMetrics,
-  detailMistakes,
-  detailSteps,
-} from '../data/content';
-import { colors, radius, spacing, typography } from '../theme/tokens';
-import type { ScreenId } from '../types/navigation';
+  AppButton,
+  SectionHeading,
+  SurfaceCard,
+} from "../components/primitives";
+import { recyclingGuides } from "../data/content";
+import { colors, radius, spacing, typography } from "../theme/tokens";
+import type { ScreenId } from "../types/navigation";
 
 type DetailScreenProps = {
   currentScreen: ScreenId;
   onNavigate: (screen: ScreenId) => void;
+  guideId?: string; // NOVO: A tela agora espera um ID
 };
 
 export function DetailScreen({
   currentScreen,
   onNavigate,
+  guideId = "plastico",
 }: DetailScreenProps) {
+  // Puxa o guia correspondente do banco de dados local. Se não achar, usa o plástico como fallback seguro.
+  const guide =
+    recyclingGuides[guideId as keyof typeof recyclingGuides] ||
+    recyclingGuides.plastico;
+
   return (
     <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
-      <View style={styles.topBar}>
-        <Pressable onPress={() => onNavigate('learn')} style={styles.iconButton}>
-          <ArrowLeft color={colors.text} size={18} strokeWidth={2.4} />
-        </Pressable>
-        <Text style={styles.topTitle}>Aprender</Text>
-        <View style={styles.topActions}>
-          <Pressable style={styles.iconButton}>
-            <Bookmark color={colors.textSoft} size={18} strokeWidth={2.2} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.topBar}>
+          <Pressable
+            onPress={() => onNavigate("learn")}
+            style={styles.iconButton}
+          >
+            <ArrowLeft color={colors.text} size={18} strokeWidth={2.4} />
           </Pressable>
-          <Pressable style={styles.iconButton}>
-            <Share2 color={colors.textSoft} size={18} strokeWidth={2.2} />
-          </Pressable>
+          <Text style={styles.topTitle}>Guia de Reciclagem</Text>
+          <View style={styles.topActions}>
+            <Pressable style={styles.iconButton}>
+              <Bookmark color={colors.textSoft} size={18} strokeWidth={2.2} />
+            </Pressable>
+            <Pressable style={styles.iconButton}>
+              <Share2 color={colors.textSoft} size={18} strokeWidth={2.2} />
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      <SurfaceCard style={styles.heroCard}>
-        <StatPill label="Plástico" tone="primary" />
-        <Text style={styles.heroTitle}>Garrafa PET</Text>
-        <Text style={styles.heroSubtitle}>Polietileno Tereftalato</Text>
-      </SurfaceCard>
+        {/* HERO CARD DINÂMICO: A cor e o texto mudam conforme o material */}
+        <SurfaceCard
+          style={[styles.heroCard, { backgroundColor: guide.color }]}
+        >
+          <Text style={styles.heroTitle}>{guide.title}</Text>
+          <Text style={styles.heroSubtitle}>{guide.intro}</Text>
+        </SurfaceCard>
 
-      <SectionHeading title="Como descartar corretamente" />
-      <View style={styles.listWrap}>
-        {detailSteps.map((step, index) => {
-          const Icon = index === 0 ? Droplets : index === 1 ? Package : CheckCircle2;
-          return (
-            <SurfaceCard key={step.title} style={styles.stepCard}>
+        <SectionHeading title="Pode ser reciclado" />
+        <SurfaceCard style={styles.safeListCard}>
+          {guide.canRecycle.map((item) => (
+            <View key={item} style={styles.listItem}>
+              <CheckCircle2
+                color={colors.primary}
+                size={20}
+                strokeWidth={2.5}
+              />
+              <Text style={styles.listText}>{item}</Text>
+            </View>
+          ))}
+        </SurfaceCard>
+
+        <SectionHeading title="Como descartar corretamente" />
+        <View style={styles.listWrap}>
+          {guide.steps.map((step, index) => (
+            <SurfaceCard key={index} style={styles.stepCard}>
               <View style={styles.stepIcon}>
-                <Icon color={colors.primary} size={20} strokeWidth={2.3} />
+                <Text style={styles.stepNumber}>{index + 1}</Text>
               </View>
               <View style={styles.stepCopy}>
-                <Text style={styles.stepTitle}>{step.title}</Text>
-                <Text style={styles.stepDescription}>{step.description}</Text>
+                <Text style={styles.stepDescription}>{step}</Text>
               </View>
             </SurfaceCard>
-          );
-        })}
-      </View>
+          ))}
+        </View>
 
-      <SectionHeading title="O que não fazer" />
-      <SurfaceCard style={styles.warningCard}>
-        {detailMistakes.map((mistake) => (
-          <View key={mistake} style={styles.warningItem}>
-            <View style={styles.warningIcon}>
-              <AlertTriangle color={colors.danger} size={18} strokeWidth={2.3} />
+        <SectionHeading title="O que NÃO fazer (Não reciclável)" />
+        <SurfaceCard style={styles.warningCard}>
+          {guide.cannotRecycle.map((mistake) => (
+            <View key={mistake} style={styles.warningItem}>
+              <View style={styles.warningIcon}>
+                <AlertTriangle
+                  color={colors.danger}
+                  size={18}
+                  strokeWidth={2.3}
+                />
+              </View>
+              <Text style={styles.warningText}>{mistake}</Text>
             </View>
-            <Text style={styles.warningText}>{mistake}</Text>
-          </View>
-        ))}
-      </SurfaceCard>
+          ))}
+        </SurfaceCard>
 
-      <View style={styles.metricGrid}>
-        {detailMetrics.map((metric, index) => {
-          const Icon = index === 0 ? CheckCircle2 : index === 1 ? Clock3 : Trash2;
-          return (
-            <SurfaceCard key={metric.label} style={styles.metricCard}>
-              <Icon color={colors.tertiary} size={20} strokeWidth={2.3} />
-              <Text style={styles.metricValue}>{metric.value}</Text>
-              <Text style={styles.metricLabel}>{metric.label}</Text>
-            </SurfaceCard>
-          );
-        })}
-      </View>
-
-      <AppButton
-        label="Marcar como aprendido"
-        onPress={() => onNavigate('achievements')}
-      />
+        {/* Botão de concluir retorna para o menu de estudos */}
+        <AppButton
+          label="Voltar para os guias"
+          onPress={() => onNavigate("learn")}
+        />
+      </ScrollView>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    gap: spacing.xl,
+    paddingBottom: spacing.xl,
+  },
   heroCard: {
-    gap: spacing.sm,
+    gap: spacing.md,
+    borderWidth: 0,
+    padding: spacing.xl,
   },
   heroSubtitle: {
-    color: colors.textSoft,
+    color: "#ffffff",
     fontFamily: typography.body,
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 22,
+    opacity: 0.9,
   },
   heroTitle: {
-    color: colors.text,
+    color: "#ffffff",
     fontFamily: typography.headlineStrong,
-    fontSize: 36,
+    fontSize: 34,
   },
   iconButton: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.border,
     borderRadius: radius.pill,
     borderWidth: 1,
     height: 38,
-    justifyContent: 'center',
+    justifyContent: "center",
     width: 38,
   },
   listWrap: {
     gap: spacing.md,
   },
-  metricCard: {
-    alignItems: 'flex-start',
-    flex: 1,
-    gap: spacing.xs,
-    minHeight: 132,
-  },
-  metricGrid: {
-    flexDirection: 'row',
+  safeListCard: {
     gap: spacing.md,
   },
-  metricLabel: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 13,
+  listItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
   },
-  metricValue: {
+  listText: {
     color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 22,
+    fontFamily: typography.bodySemiBold,
+    fontSize: 15,
+    flex: 1,
   },
   stepCard: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
+    alignItems: "center",
+    flexDirection: "row",
     gap: spacing.md,
   },
   stepCopy: {
     flex: 1,
-    gap: spacing.xs,
   },
   stepDescription: {
     color: colors.textMuted,
@@ -167,46 +183,46 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   stepIcon: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.primarySoft,
     borderRadius: radius.md,
     height: 42,
-    justifyContent: 'center',
+    justifyContent: "center",
     width: 42,
   },
-  stepTitle: {
-    color: colors.text,
-    fontFamily: typography.bodyBold,
-    fontSize: 16,
+  stepNumber: {
+    color: colors.primary,
+    fontFamily: typography.headlineStrong,
+    fontSize: 18,
   },
   topActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.xs,
   },
   topBar: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   topTitle: {
     color: colors.text,
     fontFamily: typography.headline,
-    fontSize: 22,
+    fontSize: 20,
   },
   warningCard: {
     gap: spacing.md,
   },
   warningIcon: {
-    alignItems: 'center',
-    backgroundColor: '#ffebe9',
+    alignItems: "center",
+    backgroundColor: "#ffebe9",
     borderRadius: radius.md,
     height: 38,
-    justifyContent: 'center',
+    justifyContent: "center",
     width: 38,
   },
   warningItem: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
+    alignItems: "center", // Centraliza o ícone e o texto verticalmente
+    flexDirection: "row",
     gap: spacing.md,
   },
   warningText: {

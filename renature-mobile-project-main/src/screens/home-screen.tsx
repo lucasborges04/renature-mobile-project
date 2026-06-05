@@ -6,6 +6,10 @@ import {
   Leaf,
   TreePine,
   Recycle,
+  Camera,
+  Edit3,
+  BookOpen,
+  Trophy,
   type LucideIcon,
 } from "lucide-react-native";
 import {
@@ -25,7 +29,7 @@ import {
   StatPill,
   SurfaceCard,
 } from "../components/primitives";
-import { homeActions, homeTip } from "../data/content";
+import { homeTip } from "../data/content";
 import { getStitchStatusLabel } from "../config/stitch";
 import { colors, radius, spacing, typography } from "../theme/tokens";
 import type { ScreenId } from "../types/navigation";
@@ -82,6 +86,33 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
   const currentProgress =
     levelRange > 0 ? (progressInCurrentLevel / levelRange) * 100 : 100;
 
+  const painelActions = [
+    {
+      title: "Escanear Item",
+      description: "Use a câmera para identificar resíduos.",
+      icon: Camera,
+      screen: "scanner" as ScreenId,
+    },
+    {
+      title: "Registro Manual",
+      description: "Adicione itens sem código de barras.",
+      icon: Edit3,
+      screen: "manual" as ScreenId,
+    },
+    {
+      title: "Aprender",
+      description: "Guias de descarte correto.",
+      icon: BookOpen,
+      screen: "learn" as ScreenId,
+    },
+    {
+      title: "Conquistas",
+      description: "Suas medalhas e troféus.",
+      icon: Trophy,
+      screen: "achievements" as ScreenId,
+    },
+  ];
+
   return (
     <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
       <View style={styles.topBar}>
@@ -106,7 +137,6 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
       >
         <StatPill label={getStitchStatusLabel()} tone="secondary" />
 
-        {/* Mostra um Loading enquanto busca o perfil */}
         {isLoading ? (
           <View style={{ paddingVertical: spacing.xl, alignItems: "center" }}>
             <ActivityIndicator size="large" color={colors.white} />
@@ -116,14 +146,12 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
             <View style={styles.heroStats}>
               <View>
                 <Text style={styles.heroCaption}>Impacto positivo</Text>
-                {/* Pontuação real formatada com ponto de milhar */}
                 <Text style={styles.heroValue}>
                   {userPoints.toLocaleString("pt-BR")} pts
                 </Text>
               </View>
               <View style={styles.levelBadge}>
                 <Leaf color={colors.primary} size={18} strokeWidth={2.5} />
-                {/* Nível real do banco de dados */}
                 <Text style={styles.levelBadgeText}>Nível {userLevel}</Text>
               </View>
             </View>
@@ -154,7 +182,7 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
       />
 
       <View style={styles.actionGrid}>
-        {homeActions.map((action) => {
+        {painelActions.map((action) => {
           const Icon = action.icon;
 
           return (

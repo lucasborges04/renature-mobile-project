@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { StatusBar } from "expo-status-bar";
 import {
   Literata_700Bold,
@@ -31,6 +30,9 @@ import type { ScreenId } from "./src/types/navigation";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>("onboarding-1");
+  // NOVO: Estado para guardar qual material o usuário quer aprender
+  const [selectedGuideId, setSelectedGuideId] = useState<string>("plastico");
+
   const [literataLoaded] = useLiterataFonts({
     Literata_700Bold,
     Literata_800ExtraBold,
@@ -53,7 +55,13 @@ export default function App() {
   return (
     <>
       <StatusBar style={currentScreen === "scanner" ? "light" : "dark"} />
-      {renderScreen(currentScreen, navigate)}
+      {/* Passamos o estado e a função de atualizar para o renderizador */}
+      {renderScreen(
+        currentScreen,
+        navigate,
+        selectedGuideId,
+        setSelectedGuideId,
+      )}
     </>
   );
 }
@@ -61,6 +69,8 @@ export default function App() {
 function renderScreen(
   currentScreen: ScreenId,
   navigate: (screen: ScreenId) => void,
+  selectedGuideId: string,
+  setSelectedGuideId: (id: string) => void,
 ) {
   switch (currentScreen) {
     case "onboarding-1":
@@ -75,21 +85,27 @@ function renderScreen(
       return <HomeScreen currentScreen={currentScreen} onNavigate={navigate} />;
     case "learn":
       return (
-        <LearnScreen currentScreen={currentScreen} onNavigate={navigate} />
+        <LearnScreen
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+          onSelectGuide={setSelectedGuideId} // NOVO: Permite a tela de aprender escolher o guia
+        />
+      );
+    case "detail":
+      return (
+        <DetailScreen
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+          guideId={selectedGuideId} // NOVO: Envia o guia escolhido para a tela de detalhes
+        />
       );
     case "scanner":
       return (
         <ScannerScreen currentScreen={currentScreen} onNavigate={navigate} />
       );
-
     case "manual":
       return (
         <ManualScreen currentScreen={currentScreen} onNavigate={navigate} />
-      );
-
-    case "detail":
-      return (
-        <DetailScreen currentScreen={currentScreen} onNavigate={navigate} />
       );
     case "challenges":
       return (

@@ -1,142 +1,297 @@
 import {
   Bell,
-  Calendar,
   ChevronRight,
-  Clock3,
   Recycle,
   Settings,
-  Sparkles,
   UserRound,
-} from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-
-import { AppScreen } from '../components/app-screen';
-import { SectionHeading, StatPill, SurfaceCard } from '../components/primitives';
+  Leaf,
+  Lock,
+} from "lucide-react-native";
 import {
-  profileAchievements,
-  profileHighlights,
-  profileLinks,
-  recentActivities,
-} from '../data/content';
-import { colors, radius, spacing, typography } from '../theme/tokens';
-import type { ScreenId } from '../types/navigation';
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+} from "react-native";
+import { useEffect, useState } from "react";
+
+import { AppScreen } from "../components/app-screen";
+import { SectionHeading, SurfaceCard } from "../components/primitives";
+// REMOVIDO: import { profileAchievements, profileLinks } from "../data/content";
+import { colors, radius, spacing, typography } from "../theme/tokens";
+import type { ScreenId } from "../types/navigation";
+import { api } from "../services/api";
 
 type ProfileScreenProps = {
   currentScreen: ScreenId;
   onNavigate: (screen: ScreenId) => void;
 };
 
+type ActionHistory = {
+  _id: string;
+  itemType: string;
+  description: string;
+  pointsEarned: number;
+  createdAt: string;
+};
+
 export function ProfileScreen({
   currentScreen,
   onNavigate,
 }: ProfileScreenProps) {
+  const [history, setHistory] = useState<ActionHistory[]>([]);
+  const [userData, setUserData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 1. Links fixos de configuração
+  const profileLinks = [
+    "Editar perfil",
+    "Configurações",
+    "Privacidade e permissões",
+  ];
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const historyRes = await api.get("/actions/history");
+        setHistory(historyRes.data);
+
+        try {
+          const userRes = await api.get("/users/profile");
+          setUserData(userRes.data);
+        } catch (e) {
+          console.log("Aviso: Rota de perfil não encontrada, usando fallback.");
+          setUserData({
+            name: "Eco-Herói",
+            level: 1,
+            points: 0,
+            createdAt: new Date().toISOString(),
+            unlockedAchievements: [],
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+        Alert.alert("Ops!", "Não foi possível carregar seu histórico.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const d = new Date(dateString);
+    return `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}/${d.getFullYear()}`;
+  };
+
+  if (isLoading) {
+    return (
+      <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text
+            style={{
+              marginTop: spacing.md,
+              fontFamily: typography.bodyBold,
+              color: colors.textMuted,
+            }}
+          >
+            Carregando seu impacto...
+          </Text>
+        </View>
+      </AppScreen>
+    );
+  }
+
+  const stats = [
+    { label: "Nível", value: userData?.level || 1 },
+    { label: "Pontos XP", value: userData?.points || 0 },
+    { label: "Reciclagens", value: history.length },
+  ];
+
+  // 2. Lógica Dinâmica para exibir as últimas 3 conquistas reais
+  const unlockedList = userData?.unlockedAchievements || [];
+  const displayAchievements = [];
+
+  for (let i = 0; i < 3; i++) {
+    if (unlockedList[i]) {
+      displayAchievements.push({
+        label: unlockedList[i].title,
+        icon: Leaf, // Ícone de conquista destravada
+        isLocked: false,
+      });
+    } else {
+      displayAchievements.push({
+        label: "Em breve",
+        icon: Lock, // Cadeado para slot vazio
+        isLocked: true,
+      });
+    }
+  }
+
   return (
     <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
-      <View style={styles.topBar}>
-        <View style={styles.topBarLeft}>
-          <Text style={styles.greeting}>Olá, Eco-Herói</Text>
-        </View>
-        <View style={styles.topBarRight}>
-          <View style={styles.iconButton}>
-            <Bell color={colors.textSoft} size={18} strokeWidth={2.2} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.topBar}>
+          <View style={styles.topBarLeft}>
+            <Text style={styles.greeting}>
+              Olá, {userData?.name?.split(" ")[0] || "Eco-Herói"}
+            </Text>
           </View>
-          <View style={styles.iconButton}>
-            <Settings color={colors.textSoft} size={18} strokeWidth={2.2} />
-          </View>
-        </View>
-      </View>
-
-      <SurfaceCard style={styles.profileCard}>
-        <View style={styles.profileHeader}>
-          <View style={styles.profileAvatar}>
-            <UserRound color={colors.primary} size={28} strokeWidth={2.2} />
-          </View>
-          <View style={styles.profileCopy}>
-            <Text style={styles.profileName}>Mariana Silva</Text>
-            <Text style={styles.profileMeta}>Membro desde Março 2023</Text>
-          </View>
-        </View>
-
-        <View style={styles.profileStats}>
-          {profileHighlights.map((stat) => (
-            <View key={stat.label} style={styles.profileStatCard}>
-              <Text style={styles.profileStatValue}>{stat.value}</Text>
-              <Text style={styles.profileStatLabel}>{stat.label}</Text>
+          <View style={styles.topBarRight}>
+            <View style={styles.iconButton}>
+              <Bell color={colors.textSoft} size={18} strokeWidth={2.2} />
             </View>
+            <View style={styles.iconButton}>
+              <Settings color={colors.textSoft} size={18} strokeWidth={2.2} />
+            </View>
+          </View>
+        </View>
+
+        <SurfaceCard style={styles.profileCard}>
+          <View style={styles.profileHeader}>
+            <View style={styles.profileAvatar}>
+              <UserRound color={colors.primary} size={28} strokeWidth={2.2} />
+            </View>
+            <View style={styles.profileCopy}>
+              <Text style={styles.profileName}>
+                {userData?.name || "Carregando..."}
+              </Text>
+              <Text style={styles.profileMeta}>
+                Membro desde{" "}
+                {userData ? formatDate(userData.createdAt) : "2026"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.profileStats}>
+            {stats.map((stat) => (
+              <View key={stat.label} style={styles.profileStatCard}>
+                <Text style={styles.profileStatValue}>{stat.value}</Text>
+                <Text style={styles.profileStatLabel}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+        </SurfaceCard>
+
+        <SectionHeading
+          title="Seu Histórico"
+          subtitle="Últimos itens reciclados por você"
+        />
+        <View style={styles.listWrap}>
+          {history.length === 0 ? (
+            <SurfaceCard style={{ alignItems: "center", padding: spacing.xl }}>
+              <Recycle color={colors.textMuted} size={32} />
+              <Text
+                style={{
+                  fontFamily: typography.body,
+                  color: colors.textMuted,
+                  marginTop: spacing.sm,
+                }}
+              >
+                Você ainda não fez nenhuma reciclagem.
+              </Text>
+            </SurfaceCard>
+          ) : (
+            history.map((activity) => (
+              <SurfaceCard key={activity._id} style={styles.activityCard}>
+                <View style={styles.activityIcon}>
+                  <Recycle color={colors.primary} size={18} strokeWidth={2.2} />
+                </View>
+                <View style={styles.activityCopy}>
+                  <Text style={styles.activityTitle}>
+                    {activity.description || "Item Reciclado"}
+                  </Text>
+                  <Text style={styles.activitySubtitle}>
+                    {activity.itemType}
+                  </Text>
+                </View>
+                <View style={styles.activityMeta}>
+                  <Text style={styles.activityPoints}>
+                    +{activity.pointsEarned} pts
+                  </Text>
+                  <Text style={styles.activityTime}>
+                    {formatDate(activity.createdAt)}
+                  </Text>
+                </View>
+              </SurfaceCard>
+            ))
+          )}
+        </View>
+
+        <SectionHeading title="Últimas Conquistas" />
+        <View style={styles.achievementRow}>
+          {displayAchievements.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <SurfaceCard
+                key={`${item.label}-${index}`}
+                style={styles.badgeCard}
+              >
+                <View
+                  style={[
+                    styles.badgeIcon,
+                    item.isLocked && { backgroundColor: colors.surfaceStrong },
+                  ]}
+                >
+                  <Icon
+                    color={item.isLocked ? colors.textSoft : colors.primary}
+                    size={20}
+                    strokeWidth={2.2}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.badgeLabel,
+                    item.isLocked && { color: colors.textSoft },
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </SurfaceCard>
+            );
+          })}
+        </View>
+
+        <SectionHeading title="Ajustes" />
+        <View style={styles.listWrap}>
+          {profileLinks.map((link) => (
+            <Pressable key={link} style={styles.linkRow}>
+              <Text style={styles.linkLabel}>{link}</Text>
+              <ChevronRight
+                color={colors.textSoft}
+                size={16}
+                strokeWidth={2.3}
+              />
+            </Pressable>
           ))}
         </View>
-      </SurfaceCard>
-
-      <SectionHeading actionLabel="Ver tudo" title="Atividades Recentes" />
-      <View style={styles.listWrap}>
-        {recentActivities.map((activity, index) => (
-          <SurfaceCard key={activity.title} style={styles.activityCard}>
-            <View style={styles.activityIcon}>
-              {index === 0 ? (
-                <Recycle color={colors.primary} size={18} strokeWidth={2.2} />
-              ) : index === 1 ? (
-                <Sparkles color={colors.primary} size={18} strokeWidth={2.2} />
-              ) : (
-                <Calendar color={colors.primary} size={18} strokeWidth={2.2} />
-              )}
-            </View>
-            <View style={styles.activityCopy}>
-              <Text style={styles.activityTitle}>{activity.title}</Text>
-              <Text style={styles.activitySubtitle}>{activity.subtitle}</Text>
-            </View>
-            <View style={styles.activityMeta}>
-              <Text style={styles.activityPoints}>{activity.points}</Text>
-              <Text style={styles.activityTime}>{activity.time}</Text>
-            </View>
-          </SurfaceCard>
-        ))}
-      </View>
-
-      <SectionHeading title="Últimas Conquistas" />
-      <View style={styles.achievementRow}>
-        {profileAchievements.map((item, index) => {
-          const Icon = item.icon;
-          return (
-            <SurfaceCard key={item.label} style={styles.badgeCard}>
-              <View
-                style={[
-                  styles.badgeIcon,
-                  index === 2 && { backgroundColor: colors.surfaceStrong },
-                ]}
-              >
-                <Icon
-                  color={index === 2 ? colors.textSoft : colors.primary}
-                  size={20}
-                  strokeWidth={2.2}
-                />
-              </View>
-              <Text style={styles.badgeLabel}>{item.label}</Text>
-            </SurfaceCard>
-          );
-        })}
-      </View>
-
-      <SectionHeading title="Ajustes" />
-      <View style={styles.listWrap}>
-        {profileLinks.map((link) => (
-          <Pressable key={link} style={styles.linkRow}>
-            <Text style={styles.linkLabel}>{link}</Text>
-            <ChevronRight color={colors.textSoft} size={16} strokeWidth={2.3} />
-          </Pressable>
-        ))}
-      </View>
+      </ScrollView>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    gap: spacing.xl,
+    paddingBottom: spacing.xl,
+  },
   achievementRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   activityCard: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
+    alignItems: "flex-start",
+    flexDirection: "row",
     gap: spacing.md,
   },
   activityCopy: {
@@ -144,15 +299,15 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
   },
   activityIcon: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.primarySoft,
     borderRadius: radius.md,
     height: 40,
-    justifyContent: 'center',
+    justifyContent: "center",
     width: 40,
   },
   activityMeta: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     gap: spacing.xxs,
   },
   activityPoints: {
@@ -177,24 +332,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   badgeCard: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
     gap: spacing.sm,
     padding: spacing.md,
   },
   badgeIcon: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.primarySoft,
     borderRadius: radius.pill,
     height: 44,
-    justifyContent: 'center',
+    justifyContent: "center",
     width: 44,
   },
   badgeLabel: {
     color: colors.text,
     fontFamily: typography.bodyBold,
     fontSize: 13,
-    textAlign: 'center',
+    textAlign: "center",
   },
   greeting: {
     color: colors.primary,
@@ -202,13 +357,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   iconButton: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.border,
     borderRadius: radius.pill,
     borderWidth: 1,
     height: 38,
-    justifyContent: 'center',
+    justifyContent: "center",
     width: 38,
   },
   linkLabel: {
@@ -217,13 +372,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   linkRow: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.border,
     borderRadius: radius.md,
     borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
@@ -231,11 +386,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   profileAvatar: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.primarySoft,
     borderRadius: radius.pill,
     height: 72,
-    justifyContent: 'center',
+    justifyContent: "center",
     width: 72,
   },
   profileCard: {
@@ -246,8 +401,8 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   profileHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    flexDirection: "row",
     gap: spacing.md,
   },
   profileMeta: {
@@ -278,19 +433,21 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   profileStats: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   topBar: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   topBarLeft: {
     flex: 1,
   },
   topBarRight: {
-    flexDirection: 'row',
+    flex: 1,
+    flexDirection: "row",
     gap: spacing.xs,
+    justifyContent: "flex-end",
   },
 });
