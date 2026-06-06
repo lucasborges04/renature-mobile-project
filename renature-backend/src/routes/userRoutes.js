@@ -6,5 +6,6 @@ const { protect } = require("../middlewares/authMiddleware");
 
 router.get("/profile", protect, userController.getProfile);
 router.get("/ranking", protect, userController.getRanking);
+router.put("/profile", protect, userController.updateProfile);
 
 module.exports = router;

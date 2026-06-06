@@ -1,5 +1,5 @@
-import type { LucideIcon } from 'lucide-react-native';
-import { ArrowRight } from 'lucide-react-native';
+import type { LucideIcon } from "lucide-react-native";
+import { ArrowRight } from "lucide-react-native";
 import {
   Pressable,
   StyleSheet,
@@ -7,11 +7,11 @@ import {
   View,
   type StyleProp,
   type ViewStyle,
-} from 'react-native';
+} from "react-native";
 
-import { colors, radius, shadows, spacing, typography } from '../theme/tokens';
+import { colors, radius, shadows, spacing, typography } from "../theme/tokens";
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = "primary" | "secondary" | "ghost";
 
 type AppButtonProps = {
   icon?: LucideIcon;
@@ -19,6 +19,7 @@ type AppButtonProps = {
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
   variant?: ButtonVariant;
+  disabled?: boolean;
 };
 
 type CardProps = {
@@ -40,12 +41,12 @@ type SectionHeadingProps = {
 
 type StatPillProps = {
   label: string;
-  tone?: 'primary' | 'secondary' | 'tertiary';
+  tone?: "primary" | "secondary" | "tertiary";
 };
 
 const buttonVariants: Record<ButtonVariant, ViewStyle> = {
   ghost: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 0,
   },
   primary: {
@@ -64,10 +65,10 @@ export function AppButton({
   label,
   onPress,
   style,
-  variant = 'primary',
+  variant = "primary",
 }: AppButtonProps) {
-  const isGhost = variant === 'ghost';
-  const isPrimary = variant === 'primary';
+  const isGhost = variant === "ghost";
+  const isPrimary = variant === "primary";
 
   return (
     <Pressable
@@ -106,7 +107,9 @@ export function ProgressBar({ label, value }: ProgressBarProps) {
     <View style={styles.progressWrap}>
       {label ? <Text style={styles.progressLabel}>{label}</Text> : null}
       <View style={styles.progressTrack}>
-        <View style={[styles.progressValue, { width: `${Math.min(value, 100)}%` }]} />
+        <View
+          style={[styles.progressValue, { width: `${Math.min(value, 100)}%` }]}
+        />
       </View>
     </View>
   );
@@ -122,7 +125,9 @@ export function SectionHeading({
     <View style={styles.sectionHeading}>
       <View style={styles.sectionHeadingCopy}>
         <Text style={styles.sectionTitle}>{title}</Text>
-        {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+        {subtitle ? (
+          <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+        ) : null}
       </View>
       {actionLabel && onActionPress ? (
         <Pressable onPress={onActionPress} style={styles.sectionAction}>
@@ -133,7 +138,7 @@ export function SectionHeading({
   );
 }
 
-export function StatPill({ label, tone = 'primary' }: StatPillProps) {
+export function StatPill({ label, tone = "primary" }: StatPillProps) {
   const toneStyles = {
     primary: {
       backgroundColor: colors.primarySoft,
@@ -165,11 +170,11 @@ export function StatPill({ label, tone = 'primary' }: StatPillProps) {
 
 const styles = StyleSheet.create({
   button: {
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: radius.md,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.sm,
-    justifyContent: 'center',
+    justifyContent: "center",
     minHeight: 56,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
@@ -198,12 +203,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceStrong,
     borderRadius: radius.pill,
     height: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressValue: {
     backgroundColor: colors.primary,
     borderRadius: radius.pill,
-    height: '100%',
+    height: "100%",
   },
   progressWrap: {
     gap: spacing.xs,
@@ -218,9 +223,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   sectionHeading: {
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   sectionHeadingCopy: {
     flex: 1,
@@ -239,7 +244,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   statPill: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 8,

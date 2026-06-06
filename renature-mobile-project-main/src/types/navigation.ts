@@ -11,6 +11,7 @@ export type ScreenId =
   | "achievements"
   | "ranking"
   | "profile"
-  | "manual";
+  | "manual"
+  | "edit-profile";
 
 export type MainTab = "home" | "learn" | "scanner" | "achievements" | "profile";

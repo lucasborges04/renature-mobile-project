@@ -27,6 +27,7 @@ import { ScannerScreen } from "./src/screens/scanner-screen";
 import { ManualScreen } from "./src/screens/manual-screen";
 import { colors } from "./src/theme/tokens";
 import type { ScreenId } from "./src/types/navigation";
+import { EditProfileScreen } from "./src/screens/edit-profile-screen";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>("onboarding-1");
@@ -125,6 +126,13 @@ function renderScreen(
     case "profile":
       return (
         <ProfileScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    case "edit-profile":
+      return (
+        <EditProfileScreen
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+        />
       );
     default:
       return <HomeScreen currentScreen="home" onNavigate={navigate} />;

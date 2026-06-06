@@ -18,6 +18,41 @@ const userController = {
     }
   },
 
+  async updateProfile(req, res) {
+    try {
+      const { name, email } = req.body;
+      const userId = req.user._id;
+
+      if (!name || !email) {
+        return res
+          .status(400)
+          .json({ message: "Nome e e-mail são obrigatórios." });
+      }
+
+      const emailExists = await User.findOne({ email, _id: { $ne: userId } });
+      if (emailExists) {
+        return res
+          .status(400)
+          .json({ message: "Este e-mail já está em uso por outro usuário." });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { name, email },
+        { new: true, runValidators: true },
+      ).select("-password");
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Usuário não encontrado." });
+      }
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      res.status(500).json({ message: "Erro interno no servidor." });
+    }
+  },
+
   async getRanking(req, res) {
     try {
       const top10 = await User.find()

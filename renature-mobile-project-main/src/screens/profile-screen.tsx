@@ -20,7 +20,6 @@ import { useEffect, useState } from "react";
 
 import { AppScreen } from "../components/app-screen";
 import { SectionHeading, SurfaceCard } from "../components/primitives";
-// REMOVIDO: import { profileAchievements, profileLinks } from "../data/content";
 import { colors, radius, spacing, typography } from "../theme/tokens";
 import type { ScreenId } from "../types/navigation";
 import { api } from "../services/api";
@@ -46,12 +45,22 @@ export function ProfileScreen({
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 1. Links fixos de configuração
   const profileLinks = [
     "Editar perfil",
     "Configurações",
     "Privacidade e permissões",
   ];
+
+  const handleMenuPress = (linkName: string) => {
+    if (linkName === "Editar perfil") {
+      onNavigate("edit-profile");
+    } else {
+      Alert.alert(
+        "Em desenvolvimento",
+        `A área de "${linkName}" estará disponível na versão final do aplicativo.`,
+      );
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -115,7 +124,6 @@ export function ProfileScreen({
     { label: "Reciclagens", value: history.length },
   ];
 
-  // 2. Lógica Dinâmica para exibir as últimas 3 conquistas reais
   const unlockedList = userData?.unlockedAchievements || [];
   const displayAchievements = [];
 
@@ -123,13 +131,13 @@ export function ProfileScreen({
     if (unlockedList[i]) {
       displayAchievements.push({
         label: unlockedList[i].title,
-        icon: Leaf, // Ícone de conquista destravada
+        icon: Leaf,
         isLocked: false,
       });
     } else {
       displayAchievements.push({
         label: "Em breve",
-        icon: Lock, // Cadeado para slot vazio
+        icon: Lock,
         isLocked: true,
       });
     }
@@ -265,7 +273,14 @@ export function ProfileScreen({
         <SectionHeading title="Ajustes" />
         <View style={styles.listWrap}>
           {profileLinks.map((link) => (
-            <Pressable key={link} style={styles.linkRow}>
+            <Pressable
+              key={link}
+              style={({ pressed }) => [
+                styles.linkRow,
+                pressed && { opacity: 0.7 },
+              ]}
+              onPress={() => handleMenuPress(link)}
+            >
               <Text style={styles.linkLabel}>{link}</Text>
               <ChevronRight
                 color={colors.textSoft}
