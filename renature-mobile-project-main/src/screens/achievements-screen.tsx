@@ -1,5 +1,4 @@
 import {
-  Bell,
   ChevronRight,
   Lock,
   Leaf,
@@ -27,7 +26,8 @@ import {
   StatPill,
   SurfaceCard,
 } from "../components/primitives";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import type { ScreenId } from "../types/navigation";
 import { userService } from "../services/userService";
 
@@ -78,6 +78,9 @@ export function AchievementsScreen({
   currentScreen,
   onNavigate,
 }: AchievementsScreenProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -136,7 +139,7 @@ export function AchievementsScreen({
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={activeColors.primary} />
         </View>
       ) : (
         <ScrollView
@@ -147,9 +150,6 @@ export function AchievementsScreen({
             <Text style={styles.greeting}>
               Olá, {userData?.name?.split(" ")[0] || "Eco-Herói"}
             </Text>
-            <View style={styles.notifyButton}>
-              <Bell color={colors.textSoft} size={18} strokeWidth={2.2} />
-            </View>
           </View>
 
           <SectionHeading
@@ -200,6 +200,8 @@ function AchievementCard({
     title: string;
   };
 }) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
   const Icon = item.icon;
 
   return (
@@ -212,11 +214,11 @@ function AchievementCard({
       <View
         style={[
           styles.achievementIcon,
-          !item.earned && { backgroundColor: colors.surfaceStrong },
+          !item.earned && { backgroundColor: activeColors.surfaceStrong },
         ]}
       >
         <Icon
-          color={item.earned ? colors.primary : colors.textSoft}
+          color={item.earned ? activeColors.primary : activeColors.textSoft}
           size={22}
           strokeWidth={2.2}
         />
@@ -225,7 +227,7 @@ function AchievementCard({
         <Text
           style={[
             styles.achievementStatus,
-            !item.earned && { color: colors.textMuted },
+            !item.earned && { color: activeColors.textMuted },
           ]}
         >
           {item.progress}
@@ -233,7 +235,7 @@ function AchievementCard({
         <Text
           style={[
             styles.achievementTitle,
-            !item.earned && { color: colors.textSoft },
+            !item.earned && { color: activeColors.textSoft },
           ]}
         >
           {item.title}
@@ -241,88 +243,89 @@ function AchievementCard({
         <Text style={styles.achievementDescription}>{item.description}</Text>
       </View>
       {!item.earned ? (
-        <Lock color={colors.textSoft} size={18} strokeWidth={2.2} />
+        <Lock color={activeColors.textSoft} size={18} strokeWidth={2.2} />
       ) : null}
     </SurfaceCard>
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    gap: spacing.xl,
-    paddingBottom: spacing.xl,
-  },
-  achievementCard: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  achievementCardLocked: {
-    backgroundColor: colors.surfaceMuted,
-  },
-  achievementCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  achievementDescription: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  achievementIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.md,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
-  },
-  achievementStatus: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 12,
-    textTransform: "uppercase",
-  },
-  achievementTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  greeting: {
-    color: colors.primary,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  heroCard: {
-    gap: spacing.sm,
-  },
-  heroSubtitle: {
-    color: colors.textMuted,
-    fontFamily: typography.bodySemiBold,
-    fontSize: 15,
-  },
-  heroTitle: {
-    color: colors.text,
-    fontFamily: typography.headlineStrong,
-    fontSize: 30,
-  },
-  listWrap: {
-    gap: spacing.md,
-  },
-  notifyButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  topBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    achievementCard: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    achievementCardLocked: {
+      backgroundColor: themeColors.surfaceMuted,
+    },
+    achievementCopy: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    achievementDescription: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    achievementIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.md,
+      height: 44,
+      justifyContent: "center",
+      width: 44,
+    },
+    achievementStatus: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 12,
+      textTransform: "uppercase",
+    },
+    achievementTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    greeting: {
+      color: themeColors.primary,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    heroCard: {
+      gap: spacing.sm,
+    },
+    heroSubtitle: {
+      color: themeColors.textMuted,
+      fontFamily: typography.bodySemiBold,
+      fontSize: 15,
+    },
+    heroTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headlineStrong,
+      fontSize: 30,
+    },
+    listWrap: {
+      gap: spacing.md,
+    },
+    notifyButton: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    scrollContent: {
+      gap: spacing.xl,
+      paddingBottom: spacing.xl,
+    },
+    topBar: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+  });

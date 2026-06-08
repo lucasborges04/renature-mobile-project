@@ -1,7 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
 import {
   ArrowRight,
-  Bell,
+  Moon,
+  Sun,
   Droplets,
   Leaf,
   TreePine,
@@ -31,7 +32,8 @@ import {
 } from "../components/primitives";
 import { homeTip } from "../data/content";
 import { getStitchStatusLabel } from "../config/stitch";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import type { ScreenId } from "../types/navigation";
 import { userService } from "../services/userService";
 
@@ -43,6 +45,8 @@ type HomeScreenProps = {
 export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { theme, toggleTheme, activeColors } = useTheme();
+  const styles = createStyles(activeColors);
 
   useEffect(() => {
     async function loadUserProfile() {
@@ -80,7 +84,6 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
   }
 
   const pointsMissing = nextLevelPoints - userPoints;
-
   const levelRange = nextLevelPoints - previousLevelPoints;
   const progressInCurrentLevel = userPoints - previousLevelPoints;
   const currentProgress =
@@ -118,7 +121,7 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
       <View style={styles.topBar}>
         <View style={styles.avatarRow}>
           <View style={styles.avatar}>
-            <Leaf color={colors.primary} size={20} strokeWidth={2.4} />
+            <Leaf color={activeColors.primary} size={20} strokeWidth={2.4} />
           </View>
           <Text style={styles.greeting}>
             {isLoading
@@ -126,20 +129,24 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
               : `Olá, ${userData?.name?.split(" ")[0] || "Eco-Herói"}`}
           </Text>
         </View>
-        <View style={styles.notifyButton}>
-          <Bell color={colors.textSoft} size={18} strokeWidth={2.2} />
-        </View>
+        <Pressable style={styles.notifyButton} onPress={toggleTheme}>
+          {theme === "dark" ? (
+            <Sun color={activeColors.textSoft} size={18} strokeWidth={2.2} />
+          ) : (
+            <Moon color={activeColors.textSoft} size={18} strokeWidth={2.2} />
+          )}
+        </Pressable>
       </View>
 
       <LinearGradient
-        colors={[colors.primary, colors.primaryDeep]}
+        colors={[activeColors.primary, activeColors.primaryDeep]}
         style={styles.heroCard}
       >
         <StatPill label={getStitchStatusLabel()} tone="secondary" />
 
         {isLoading ? (
           <View style={{ paddingVertical: spacing.xl, alignItems: "center" }}>
-            <ActivityIndicator size="large" color={colors.white} />
+            <ActivityIndicator size="large" color={activeColors.white} />
           </View>
         ) : (
           <>
@@ -151,7 +158,11 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
                 </Text>
               </View>
               <View style={styles.levelBadge}>
-                <Leaf color={colors.primary} size={18} strokeWidth={2.5} />
+                <Leaf
+                  color={activeColors.primary}
+                  size={18}
+                  strokeWidth={2.5}
+                />
                 <Text style={styles.levelBadgeText}>Nível {userLevel}</Text>
               </View>
             </View>
@@ -195,7 +206,11 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
               ]}
             >
               <View style={styles.actionIcon}>
-                <Icon color={colors.primary} size={22} strokeWidth={2.2} />
+                <Icon
+                  color={activeColors.primary}
+                  size={22}
+                  strokeWidth={2.2}
+                />
               </View>
               <Text style={styles.actionTitle}>{action.title}</Text>
               <Text style={styles.actionDescription}>{action.description}</Text>
@@ -218,7 +233,7 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
 
       <SurfaceCard style={styles.tipCard}>
         <View style={styles.tipIcon}>
-          <Leaf color={colors.tertiary} size={22} strokeWidth={2.2} />
+          <Leaf color={activeColors.tertiary} size={22} strokeWidth={2.2} />
         </View>
         <View style={styles.tipCopy}>
           <Text style={styles.tipTitle}>Dica sustentável</Text>
@@ -236,180 +251,184 @@ function CategoryPill({
   icon: LucideIcon;
   label: string;
 }) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
   return (
     <View style={styles.categoryPill}>
-      <Icon color={colors.primary} size={18} strokeWidth={2.3} />
+      <Icon color={activeColors.primary} size={18} strokeWidth={2.3} />
       <Text style={styles.categoryLabel}>{label}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  actionCard: {
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    flexBasis: "47%",
-    gap: spacing.sm,
-    minHeight: 158,
-    padding: spacing.lg,
-  },
-  actionDescription: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  actionGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.md,
-  },
-  actionIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.pill,
-    height: 46,
-    justifyContent: "center",
-    width: 46,
-  },
-  actionTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 21,
-  },
-  avatar: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.white,
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  avatarRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  cardPressed: {
-    opacity: 0.94,
-  },
-  categoryCard: {
-    gap: spacing.lg,
-  },
-  categoryLabel: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 14,
-  },
-  categoryPill: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.pill,
-    flexDirection: "row",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  categoryRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  greeting: {
-    color: colors.primary,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  heroButton: {
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 0,
-  },
-  heroCaption: {
-    color: colors.primarySoft,
-    fontFamily: typography.bodyBold,
-    fontSize: 12,
-    textTransform: "uppercase",
-  },
-  heroCard: {
-    borderRadius: radius.xl,
-    gap: spacing.md,
-    padding: spacing.xl,
-  },
-  heroStats: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  heroText: {
-    color: "#d8f0de",
-    fontFamily: typography.body,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  heroValue: {
-    color: colors.white,
-    fontFamily: typography.headlineStrong,
-    fontSize: 40,
-  },
-  levelBadge: {
-    alignItems: "center",
-    backgroundColor: colors.white,
-    borderRadius: radius.pill,
-    flexDirection: "row",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  levelBadgeText: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-  },
-  notifyButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  tipCard: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  tipCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  tipIcon: {
-    alignItems: "center",
-    backgroundColor: colors.tertiarySoft,
-    borderRadius: radius.md,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
-  },
-  tipText: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  tipTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  topBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    actionCard: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      flexBasis: "47%",
+      gap: spacing.sm,
+      minHeight: 158,
+      padding: spacing.lg,
+    },
+    actionDescription: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    actionGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.md,
+    },
+    actionIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.pill,
+      height: 46,
+      justifyContent: "center",
+      width: 46,
+    },
+    actionTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 21,
+    },
+    avatar: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderColor: themeColors.primary,
+      borderRadius: radius.pill,
+      borderWidth: 2,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    avatarRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.sm,
+    },
+    cardPressed: {
+      opacity: 0.94,
+    },
+    categoryCard: {
+      gap: spacing.lg,
+    },
+    categoryLabel: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 14,
+    },
+    categoryPill: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceMuted,
+      borderRadius: radius.pill,
+      flexDirection: "row",
+      gap: spacing.xs,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    categoryRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+    },
+    greeting: {
+      color: themeColors.primary,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    heroButton: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderWidth: 0,
+    },
+    heroCaption: {
+      color: themeColors.primarySoft,
+      fontFamily: typography.bodyBold,
+      fontSize: 12,
+      textTransform: "uppercase",
+    },
+    heroCard: {
+      borderRadius: radius.xl,
+      gap: spacing.md,
+      padding: spacing.xl,
+    },
+    heroStats: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    heroText: {
+      color: "#d8f0de",
+      fontFamily: typography.body,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    heroValue: {
+      color: themeColors.white,
+      fontFamily: typography.headlineStrong,
+      fontSize: 40,
+    },
+    levelBadge: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderRadius: radius.pill,
+      flexDirection: "row",
+      gap: spacing.xs,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    levelBadgeText: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 13,
+    },
+    notifyButton: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    tipCard: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    tipCopy: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    tipIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.tertiarySoft,
+      borderRadius: radius.md,
+      height: 44,
+      justifyContent: "center",
+      width: 44,
+    },
+    tipText: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    tipTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    topBar: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+  });

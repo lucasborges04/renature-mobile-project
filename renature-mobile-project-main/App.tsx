@@ -28,10 +28,10 @@ import { ManualScreen } from "./src/screens/manual-screen";
 import { colors } from "./src/theme/tokens";
 import type { ScreenId } from "./src/types/navigation";
 import { EditProfileScreen } from "./src/screens/edit-profile-screen";
+import { ThemeProvider } from "./src/theme/ThemeContext";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>("onboarding-1");
-  // NOVO: Estado para guardar qual material o usuário quer aprender
   const [selectedGuideId, setSelectedGuideId] = useState<string>("plastico");
 
   const [literataLoaded] = useLiterataFonts({
@@ -54,16 +54,15 @@ export default function App() {
   };
 
   return (
-    <>
-      <StatusBar style={currentScreen === "scanner" ? "light" : "dark"} />
-      {/* Passamos o estado e a função de atualizar para o renderizador */}
+    <ThemeProvider>
+      <StatusBar hidden />
       {renderScreen(
         currentScreen,
         navigate,
         selectedGuideId,
         setSelectedGuideId,
       )}
-    </>
+    </ThemeProvider>
   );
 }
 
@@ -89,7 +88,7 @@ function renderScreen(
         <LearnScreen
           currentScreen={currentScreen}
           onNavigate={navigate}
-          onSelectGuide={setSelectedGuideId} // NOVO: Permite a tela de aprender escolher o guia
+          onSelectGuide={setSelectedGuideId}
         />
       );
     case "detail":
@@ -97,7 +96,7 @@ function renderScreen(
         <DetailScreen
           currentScreen={currentScreen}
           onNavigate={navigate}
-          guideId={selectedGuideId} // NOVO: Envia o guia escolhido para a tela de detalhes
+          guideId={selectedGuideId}
         />
       );
     case "scanner":

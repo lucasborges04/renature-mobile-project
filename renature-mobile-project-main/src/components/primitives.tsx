@@ -5,11 +5,13 @@ import {
   StyleSheet,
   Text,
   View,
+  ViewProps,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
 
-import { colors, radius, shadows, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -44,35 +46,40 @@ type StatPillProps = {
   tone?: "primary" | "secondary" | "tertiary";
 };
 
-const buttonVariants: Record<ButtonVariant, ViewStyle> = {
-  ghost: {
-    backgroundColor: "transparent",
-    borderWidth: 0,
-  },
-  primary: {
-    backgroundColor: colors.primary,
-    borderWidth: 0,
-  },
-  secondary: {
-    backgroundColor: colors.secondarySoft,
-    borderColor: colors.border,
-    borderWidth: 1,
-  },
-};
-
 export function AppButton({
   icon: Icon = ArrowRight,
   label,
   onPress,
   style,
   variant = "primary",
+  disabled,
 }: AppButtonProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
+  const buttonVariants: Record<ButtonVariant, ViewStyle> = {
+    ghost: {
+      backgroundColor: "transparent",
+      borderWidth: 0,
+    },
+    primary: {
+      backgroundColor: activeColors.primary,
+      borderWidth: 0,
+    },
+    secondary: {
+      backgroundColor: activeColors.secondarySoft,
+      borderColor: activeColors.border,
+      borderWidth: 1,
+    },
+  };
+
   const isGhost = variant === "ghost";
   const isPrimary = variant === "primary";
 
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.button,
         buttonVariants[variant],
@@ -90,7 +97,7 @@ export function AppButton({
         {label}
       </Text>
       <Icon
-        color={isPrimary ? colors.white : colors.primary}
+        color={isPrimary ? activeColors.white : activeColors.primary}
         size={18}
         strokeWidth={2.3}
       />
@@ -98,11 +105,25 @@ export function AppButton({
   );
 }
 
-export function SurfaceCard({ children, style }: CardProps) {
-  return <View style={[styles.surfaceCard, style]}>{children}</View>;
+interface SurfaceCardProps extends ViewProps {
+  children: React.ReactNode;
+}
+
+export function SurfaceCard({ children, style, ...props }: SurfaceCardProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
+  return (
+    <View style={[styles.card, style]} {...props}>
+      {children}
+    </View>
+  );
 }
 
 export function ProgressBar({ label, value }: ProgressBarProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
   return (
     <View style={styles.progressWrap}>
       {label ? <Text style={styles.progressLabel}>{label}</Text> : null}
@@ -121,6 +142,9 @@ export function SectionHeading({
   subtitle,
   title,
 }: SectionHeadingProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
   return (
     <View style={styles.sectionHeading}>
       <View style={styles.sectionHeadingCopy}>
@@ -139,20 +163,24 @@ export function SectionHeading({
 }
 
 export function StatPill({ label, tone = "primary" }: StatPillProps) {
+  const { activeColors } = useTheme();
+
   const toneStyles = {
     primary: {
-      backgroundColor: colors.primarySoft,
-      color: colors.primary,
+      backgroundColor: activeColors.primarySoft,
+      color: activeColors.primary,
     },
     secondary: {
-      backgroundColor: colors.secondarySoft,
-      color: colors.secondary,
+      backgroundColor: activeColors.secondarySoft,
+      color: activeColors.secondary,
     },
     tertiary: {
-      backgroundColor: colors.tertiarySoft,
-      color: colors.tertiary,
+      backgroundColor: activeColors.tertiarySoft,
+      color: activeColors.tertiary,
     },
   };
+
+  const styles = createStyles(activeColors);
 
   return (
     <View
@@ -168,97 +196,102 @@ export function StatPill({ label, tone = "primary" }: StatPillProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    alignItems: "center",
-    borderRadius: radius.md,
-    flexDirection: "row",
-    gap: spacing.sm,
-    justifyContent: "center",
-    minHeight: 56,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  buttonLabel: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 16,
-  },
-  buttonLabelGhost: {
-    color: colors.primary,
-  },
-  buttonLabelPrimary: {
-    color: colors.white,
-  },
-  buttonPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.99 }],
-  },
-  progressLabel: {
-    color: colors.textSoft,
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-  },
-  progressTrack: {
-    backgroundColor: colors.surfaceStrong,
-    borderRadius: radius.pill,
-    height: 10,
-    overflow: "hidden",
-  },
-  progressValue: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.pill,
-    height: "100%",
-  },
-  progressWrap: {
-    gap: spacing.xs,
-  },
-  sectionAction: {
-    paddingLeft: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  sectionActionLabel: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 14,
-  },
-  sectionHeading: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  sectionHeadingCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  sectionSubtitle: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 24,
-    letterSpacing: -0.4,
-  },
-  statPill: {
-    alignSelf: "flex-start",
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 8,
-  },
-  statPillLabel: {
-    fontFamily: typography.bodyBold,
-    fontSize: 12,
-  },
-  surfaceCard: {
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    padding: spacing.lg,
-    ...shadows.card,
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    button: {
+      alignItems: "center",
+      borderRadius: radius.md,
+      flexDirection: "row",
+      gap: spacing.sm,
+      justifyContent: "center",
+      minHeight: 56,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    buttonLabel: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 16,
+    },
+    buttonLabelGhost: {
+      color: themeColors.primary,
+    },
+    buttonLabelPrimary: {
+      color: themeColors.white,
+    },
+    buttonPressed: {
+      opacity: 0.92,
+      transform: [{ scale: 0.99 }],
+    },
+    card: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      padding: spacing.lg,
+      shadowColor: themeColors.shadow,
+      elevation: 4,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 1,
+      shadowRadius: 20,
+    },
+    progressLabel: {
+      color: themeColors.textSoft,
+      fontFamily: typography.bodyBold,
+      fontSize: 13,
+    },
+    progressTrack: {
+      backgroundColor: themeColors.surfaceStrong,
+      borderRadius: radius.pill,
+      height: 10,
+      overflow: "hidden",
+    },
+    progressValue: {
+      backgroundColor: themeColors.primary,
+      borderRadius: radius.pill,
+      height: "100%",
+    },
+    progressWrap: {
+      gap: spacing.xs,
+    },
+    sectionAction: {
+      paddingLeft: spacing.md,
+      paddingVertical: spacing.xs,
+    },
+    sectionActionLabel: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 14,
+    },
+    sectionHeading: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    sectionHeadingCopy: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    sectionSubtitle: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    sectionTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 24,
+      letterSpacing: -0.4,
+    },
+    statPill: {
+      alignSelf: "flex-start",
+      borderRadius: radius.pill,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 8,
+    },
+    statPillLabel: {
+      fontFamily: typography.bodyBold,
+      fontSize: 12,
+    },
+  });

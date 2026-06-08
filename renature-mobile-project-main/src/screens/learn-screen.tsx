@@ -1,9 +1,4 @@
-import {
-  Bell,
-  ChevronRight,
-  Search,
-  type LucideIcon,
-} from "lucide-react-native";
+import { ChevronRight, Search, type LucideIcon } from "lucide-react-native";
 import {
   Pressable,
   StyleSheet,
@@ -11,21 +6,21 @@ import {
   View,
   TextInput,
   ScrollView,
-  Platform,
 } from "react-native";
 import { useState, useEffect } from "react";
 
 import { AppScreen } from "../components/app-screen";
 import { SectionHeading, SurfaceCard } from "../components/primitives";
 import { learnCategories } from "../data/content";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import type { ScreenId } from "../types/navigation";
 import { userService } from "../services/userService";
 
 type LearnScreenProps = {
   currentScreen: ScreenId;
   onNavigate: (screen: ScreenId) => void;
-  onSelectGuide?: (id: string) => void; // NOVO
+  onSelectGuide?: (id: string) => void;
 };
 
 export function LearnScreen({
@@ -33,6 +28,9 @@ export function LearnScreen({
   onNavigate,
   onSelectGuide,
 }: LearnScreenProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
   const [userData, setUserData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -65,9 +63,6 @@ export function LearnScreen({
           <Text style={styles.greeting}>
             Olá, {userData?.name?.split(" ")[0] || "Eco-Herói"}
           </Text>
-          <View style={styles.notifyButton}>
-            <Bell color={colors.textSoft} size={18} strokeWidth={2.2} />
-          </View>
         </View>
 
         <SectionHeading
@@ -76,11 +71,11 @@ export function LearnScreen({
         />
 
         <View style={styles.searchBar}>
-          <Search color={colors.textSoft} size={18} strokeWidth={2.2} />
+          <Search color={activeColors.textSoft} size={18} strokeWidth={2.2} />
           <TextInput
             style={styles.searchInput}
             placeholder="Buscar material ou embalagem"
-            placeholderTextColor={colors.textSoft}
+            placeholderTextColor={activeColors.textSoft}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -95,7 +90,7 @@ export function LearnScreen({
                 <Pressable
                   key={category.title}
                   onPress={() => {
-                    if (onSelectGuide) onSelectGuide(category.id!); // Salva o ID antes de navegar!
+                    if (onSelectGuide) onSelectGuide(category.id!);
                     onNavigate("detail");
                   }}
                   style={({ pressed }) => [
@@ -104,7 +99,11 @@ export function LearnScreen({
                   ]}
                 >
                   <View style={styles.categoryIcon}>
-                    <Icon color={colors.primary} size={22} strokeWidth={2.2} />
+                    <Icon
+                      color={activeColors.primary}
+                      size={22}
+                      strokeWidth={2.2}
+                    />
                   </View>
                   <Text style={styles.categoryTitle}>{category.title}</Text>
                   <Text style={styles.categoryDescription}>
@@ -113,7 +112,7 @@ export function LearnScreen({
                   <View style={styles.categoryFooter}>
                     <Text style={styles.categoryLink}>Abrir guia</Text>
                     <ChevronRight
-                      color={colors.primary}
+                      color={activeColors.primary}
                       size={16}
                       strokeWidth={2.4}
                     />
@@ -139,112 +138,111 @@ export function LearnScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: { gap: spacing.xl, paddingBottom: 100 },
-  searchInput: {
-    flex: 1,
-    color: colors.text,
-    fontFamily: typography.bodySemiBold,
-    fontSize: 14,
-    padding: 0,
-    height: 40,
-  },
-  emptySearch: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 15,
-    textAlign: "center",
-    width: "100%",
-    paddingVertical: spacing.xl,
-  },
-  cardPressed: { opacity: 0.94 },
-  categoryCard: {
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    flexBasis: "47%",
-    gap: spacing.sm,
-    minHeight: 180,
-    padding: spacing.lg,
-  },
-  categoryDescription: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  categoryFooter: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.xs,
-    marginTop: "auto",
-  },
-  categoryIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.pill,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
-  },
-  categoryLink: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-  },
-  categoryTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  greeting: {
-    color: colors.primary,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md },
-  notifyButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  searchBar: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-  },
-  searchText: {
-    color: colors.textSoft,
-    fontFamily: typography.bodySemiBold,
-    fontSize: 14,
-  },
-  tipCard: { backgroundColor: colors.primarySoft, gap: spacing.xs },
-  tipText: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  tipTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  topBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    cardPressed: { opacity: 0.94 },
+    categoryCard: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      flexBasis: "47%",
+      gap: spacing.sm,
+      minHeight: 180,
+      padding: spacing.lg,
+    },
+    categoryDescription: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    categoryFooter: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.xs,
+      marginTop: "auto",
+    },
+    categoryIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.pill,
+      height: 44,
+      justifyContent: "center",
+      width: 44,
+    },
+    categoryLink: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 13,
+    },
+    categoryTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    emptySearch: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 15,
+      paddingVertical: spacing.xl,
+      textAlign: "center",
+      width: "100%",
+    },
+    greeting: {
+      color: themeColors.primary,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md },
+    notifyButton: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    scrollContent: { gap: spacing.xl, paddingBottom: 100 },
+    searchBar: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceMuted,
+      borderColor: themeColors.border,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 12,
+    },
+    searchInput: {
+      color: themeColors.text,
+      flex: 1,
+      fontFamily: typography.bodySemiBold,
+      fontSize: 14,
+      height: 40,
+      padding: 0,
+    },
+    tipCard: {
+      backgroundColor: themeColors.primarySoft,
+      gap: spacing.xs,
+    },
+    tipText: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    tipTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    topBar: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+  });

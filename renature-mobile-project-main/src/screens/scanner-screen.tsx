@@ -20,7 +20,8 @@ import { useState } from "react";
 
 import { AppScreen } from "../components/app-screen";
 import { AppButton, SurfaceCard } from "../components/primitives";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import type { ScreenId } from "../types/navigation";
 import { recyclingService } from "../services/recyclingService";
 
@@ -33,9 +34,11 @@ export function ScannerScreen({
   currentScreen,
   onNavigate,
 }: ScannerScreenProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
   const [permission, requestPermission] = useCameraPermissions();
   const [isFlashOn, setIsFlashOn] = useState(false);
-
   const [scanned, setScanned] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [scanResult, setScanResult] = useState<{
@@ -47,7 +50,7 @@ export function ScannerScreen({
   if (!permission) {
     return (
       <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={activeColors.primary} />
       </AppScreen>
     );
   }
@@ -58,9 +61,10 @@ export function ScannerScreen({
         <SurfaceCard
           style={{ alignItems: "center", padding: spacing.xl, gap: spacing.md }}
         >
-          <CameraIcon color={colors.primary} size={40} />
+          <CameraIcon color={activeColors.primary} size={40} />
           <Text
             style={{
+              color: activeColors.text,
               fontFamily: typography.headline,
               fontSize: 20,
               textAlign: "center",
@@ -70,9 +74,9 @@ export function ScannerScreen({
           </Text>
           <Text
             style={{
+              color: activeColors.textMuted,
               fontFamily: typography.body,
               textAlign: "center",
-              color: colors.textMuted,
             }}
           >
             Para identificar os resíduos recicláveis, o aplicativo precisa usar
@@ -85,14 +89,13 @@ export function ScannerScreen({
   }
 
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
-    if (scanned || isProcessing) return; // Evita múltiplos disparos simultâneos
+    if (scanned || isProcessing) return;
 
     setScanned(true);
     setIsProcessing(true);
     setScanResult(null);
 
     try {
-      // Envia o código capturado pela câmera para o servidor Node.js
       const response = await recyclingService.recycleWithBarcode(data);
 
       setScanResult({
@@ -128,7 +131,6 @@ export function ScannerScreen({
   return (
     <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
       <View style={styles.cameraCard}>
-        {/* CÂMERA REAL COM LEITOR ATIVADO */}
         <CameraView
           style={StyleSheet.absoluteFillObject}
           facing="back"
@@ -151,21 +153,20 @@ export function ScannerScreen({
             onPress={() => onNavigate("home")}
             style={styles.iconButton}
           >
-            <ArrowLeft color={colors.white} size={18} strokeWidth={2.4} />
+            <ArrowLeft color={activeColors.white} size={18} strokeWidth={2.4} />
           </Pressable>
           <Pressable
             style={styles.iconButton}
             onPress={() => setIsFlashOn(!isFlashOn)}
           >
             <Flashlight
-              color={isFlashOn ? colors.tertiary : colors.white}
+              color={isFlashOn ? activeColors.tertiary : activeColors.white}
               size={18}
               strokeWidth={2.4}
             />
           </Pressable>
         </View>
 
-        {/* Moldura de mira pontilhada */}
         <View style={styles.scanFrame}>
           <Text style={styles.scanHint}>
             {isProcessing
@@ -174,7 +175,6 @@ export function ScannerScreen({
           </Text>
         </View>
 
-        {/* CARD DE RESULTADOS DINÂMICO */}
         <View style={styles.resultCard}>
           {isProcessing && (
             <View
@@ -184,7 +184,7 @@ export function ScannerScreen({
                 alignItems: "center",
               }}
             >
-              <ActivityIndicator size="small" color={colors.primary} />
+              <ActivityIndicator size="small" color={activeColors.primary} />
               <Text style={styles.resultTitle}>Identificando...</Text>
             </View>
           )}
@@ -194,7 +194,11 @@ export function ScannerScreen({
               <Text style={styles.resultCaption}>Status</Text>
               <Text style={styles.resultTitle}>Aguardando item</Text>
               <View style={styles.resultMeta}>
-                <Recycle color={colors.primary} size={18} strokeWidth={2.3} />
+                <Recycle
+                  color={activeColors.primary}
+                  size={18}
+                  strokeWidth={2.3}
+                />
                 <Text style={styles.resultMetaText}>Pronto para leitura</Text>
               </View>
             </>
@@ -208,7 +212,7 @@ export function ScannerScreen({
               <Text style={styles.resultTitle}>{scanResult.item}</Text>
               <View style={styles.resultMeta}>
                 <CheckCircle
-                  color={colors.primary}
+                  color={activeColors.primary}
                   size={18}
                   strokeWidth={2.3}
                 />
@@ -223,7 +227,11 @@ export function ScannerScreen({
 
       <SurfaceCard style={styles.mobileCard}>
         <View style={styles.mobileIcon}>
-          <Smartphone color={colors.primary} size={22} strokeWidth={2.2} />
+          <Smartphone
+            color={activeColors.primary}
+            size={22}
+            strokeWidth={2.2}
+          />
         </View>
         <Text style={styles.mobileTitle}>Produto sem código?</Text>
         <Text style={styles.mobileText}>
@@ -232,7 +240,6 @@ export function ScannerScreen({
         </Text>
       </SurfaceCard>
 
-      {/* BOTÕES DE AÇÃO */}
       {scanned && !isProcessing ? (
         <AppButton
           icon={CameraIcon}
@@ -256,89 +263,90 @@ export function ScannerScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  cameraCard: {
-    backgroundColor: colors.scannerOverlay,
-    borderRadius: radius.xl,
-    gap: spacing.xl,
-    minHeight: 430,
-    overflow: "hidden",
-    padding: spacing.xl,
-  },
-  cameraHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  iconButton: {
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: radius.pill,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  mobileCard: {
-    gap: spacing.sm,
-  },
-  mobileIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.pill,
-    height: 42,
-    justifyContent: "center",
-    width: 42,
-  },
-  mobileText: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  mobileTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 24,
-  },
-  resultCaption: {
-    color: colors.textSoft,
-    fontFamily: typography.bodyBold,
-    fontSize: 12,
-    textTransform: "uppercase",
-  },
-  resultCard: {
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: radius.lg,
-    gap: spacing.sm,
-    padding: spacing.lg,
-  },
-  resultMeta: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.xs,
-  },
-  resultMetaText: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-  },
-  resultTitle: {
-    color: colors.text,
-    fontFamily: typography.headlineStrong,
-    fontSize: 30,
-  },
-  scanFrame: {
-    alignItems: "center",
-    borderColor: "rgba(255,255,255,0.45)",
-    borderRadius: radius.xl,
-    borderStyle: "dashed",
-    borderWidth: 2,
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 190,
-  },
-  scanHint: {
-    color: colors.white,
-    fontFamily: typography.bodyBold,
-    fontSize: 15,
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    cameraCard: {
+      backgroundColor: themeColors.scannerOverlay,
+      borderRadius: radius.xl,
+      gap: spacing.xl,
+      minHeight: 430,
+      overflow: "hidden",
+      padding: spacing.xl,
+    },
+    cameraHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    iconButton: {
+      alignItems: "center",
+      backgroundColor: "rgba(255,255,255,0.12)",
+      borderRadius: radius.pill,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    mobileCard: {
+      gap: spacing.sm,
+    },
+    mobileIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.pill,
+      height: 42,
+      justifyContent: "center",
+      width: 42,
+    },
+    mobileText: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    mobileTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 24,
+    },
+    resultCaption: {
+      color: themeColors.textSoft,
+      fontFamily: typography.bodyBold,
+      fontSize: 12,
+      textTransform: "uppercase",
+    },
+    resultCard: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderRadius: radius.lg,
+      gap: spacing.sm,
+      padding: spacing.lg,
+    },
+    resultMeta: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.xs,
+    },
+    resultMetaText: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 13,
+    },
+    resultTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headlineStrong,
+      fontSize: 30,
+    },
+    scanFrame: {
+      alignItems: "center",
+      borderColor: "rgba(255,255,255,0.45)",
+      borderRadius: radius.xl,
+      borderStyle: "dashed",
+      borderWidth: 2,
+      flex: 1,
+      justifyContent: "center",
+      minHeight: 190,
+    },
+    scanHint: {
+      color: themeColors.white,
+      fontFamily: typography.bodyBold,
+      fontSize: 15,
+    },
+  });

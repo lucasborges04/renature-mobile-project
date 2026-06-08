@@ -20,7 +20,8 @@ import { useEffect, useState } from "react";
 
 import { AppScreen } from "../components/app-screen";
 import { SectionHeading, SurfaceCard } from "../components/primitives";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
+import { useTheme } from "../theme/ThemeContext";
 import type { ScreenId } from "../types/navigation";
 import { api } from "../services/api";
 
@@ -41,6 +42,9 @@ export function ProfileScreen({
   currentScreen,
   onNavigate,
 }: ProfileScreenProps) {
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+
   const [history, setHistory] = useState<ActionHistory[]>([]);
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -103,12 +107,12 @@ export function ProfileScreen({
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={activeColors.primary} />
           <Text
             style={{
-              marginTop: spacing.md,
+              color: activeColors.textMuted,
               fontFamily: typography.bodyBold,
-              color: colors.textMuted,
+              marginTop: spacing.md,
             }}
           >
             Carregando seu impacto...
@@ -157,10 +161,11 @@ export function ProfileScreen({
           </View>
           <View style={styles.topBarRight}>
             <View style={styles.iconButton}>
-              <Bell color={colors.textSoft} size={18} strokeWidth={2.2} />
-            </View>
-            <View style={styles.iconButton}>
-              <Settings color={colors.textSoft} size={18} strokeWidth={2.2} />
+              <Settings
+                color={activeColors.textSoft}
+                size={18}
+                strokeWidth={2.2}
+              />
             </View>
           </View>
         </View>
@@ -168,7 +173,11 @@ export function ProfileScreen({
         <SurfaceCard style={styles.profileCard}>
           <View style={styles.profileHeader}>
             <View style={styles.profileAvatar}>
-              <UserRound color={colors.primary} size={28} strokeWidth={2.2} />
+              <UserRound
+                color={activeColors.primary}
+                size={28}
+                strokeWidth={2.2}
+              />
             </View>
             <View style={styles.profileCopy}>
               <Text style={styles.profileName}>
@@ -195,14 +204,15 @@ export function ProfileScreen({
           title="Seu Histórico"
           subtitle="Últimos itens reciclados por você"
         />
+
         <View style={styles.listWrap}>
           {history.length === 0 ? (
             <SurfaceCard style={{ alignItems: "center", padding: spacing.xl }}>
-              <Recycle color={colors.textMuted} size={32} />
+              <Recycle color={activeColors.textMuted} size={32} />
               <Text
                 style={{
+                  color: activeColors.textMuted,
                   fontFamily: typography.body,
-                  color: colors.textMuted,
                   marginTop: spacing.sm,
                 }}
               >
@@ -213,7 +223,11 @@ export function ProfileScreen({
             history.map((activity) => (
               <SurfaceCard key={activity._id} style={styles.activityCard}>
                 <View style={styles.activityIcon}>
-                  <Recycle color={colors.primary} size={18} strokeWidth={2.2} />
+                  <Recycle
+                    color={activeColors.primary}
+                    size={18}
+                    strokeWidth={2.2}
+                  />
                 </View>
                 <View style={styles.activityCopy}>
                   <Text style={styles.activityTitle}>
@@ -237,6 +251,7 @@ export function ProfileScreen({
         </View>
 
         <SectionHeading title="Últimas Conquistas" />
+
         <View style={styles.achievementRow}>
           {displayAchievements.map((item, index) => {
             const Icon = item.icon;
@@ -248,11 +263,17 @@ export function ProfileScreen({
                 <View
                   style={[
                     styles.badgeIcon,
-                    item.isLocked && { backgroundColor: colors.surfaceStrong },
+                    item.isLocked && {
+                      backgroundColor: activeColors.surfaceStrong,
+                    },
                   ]}
                 >
                   <Icon
-                    color={item.isLocked ? colors.textSoft : colors.primary}
+                    color={
+                      item.isLocked
+                        ? activeColors.textSoft
+                        : activeColors.primary
+                    }
                     size={20}
                     strokeWidth={2.2}
                   />
@@ -260,7 +281,7 @@ export function ProfileScreen({
                 <Text
                   style={[
                     styles.badgeLabel,
-                    item.isLocked && { color: colors.textSoft },
+                    item.isLocked && { color: activeColors.textSoft },
                   ]}
                 >
                   {item.label}
@@ -271,6 +292,7 @@ export function ProfileScreen({
         </View>
 
         <SectionHeading title="Ajustes" />
+
         <View style={styles.listWrap}>
           {profileLinks.map((link) => (
             <Pressable
@@ -283,7 +305,7 @@ export function ProfileScreen({
             >
               <Text style={styles.linkLabel}>{link}</Text>
               <ChevronRight
-                color={colors.textSoft}
+                color={activeColors.textSoft}
                 size={16}
                 strokeWidth={2.3}
               />
@@ -295,174 +317,175 @@ export function ProfileScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    gap: spacing.xl,
-    paddingBottom: spacing.xl,
-  },
-  achievementRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  activityCard: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  activityCopy: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  activityIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.md,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  activityMeta: {
-    alignItems: "flex-end",
-    gap: spacing.xxs,
-  },
-  activityPoints: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-  },
-  activitySubtitle: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  activityTime: {
-    color: colors.textSoft,
-    fontFamily: typography.body,
-    fontSize: 12,
-  },
-  activityTitle: {
-    color: colors.text,
-    fontFamily: typography.bodyBold,
-    fontSize: 15,
-  },
-  badgeCard: {
-    alignItems: "center",
-    flex: 1,
-    gap: spacing.sm,
-    padding: spacing.md,
-  },
-  badgeIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.pill,
-    height: 44,
-    justifyContent: "center",
-    width: 44,
-  },
-  badgeLabel: {
-    color: colors.text,
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-    textAlign: "center",
-  },
-  greeting: {
-    color: colors.primary,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  iconButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 38,
-    justifyContent: "center",
-    width: 38,
-  },
-  linkLabel: {
-    color: colors.text,
-    fontFamily: typography.bodyBold,
-    fontSize: 15,
-  },
-  linkRow: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-  },
-  listWrap: {
-    gap: spacing.md,
-  },
-  profileAvatar: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.pill,
-    height: 72,
-    justifyContent: "center",
-    width: 72,
-  },
-  profileCard: {
-    gap: spacing.lg,
-  },
-  profileCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  profileHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  profileMeta: {
-    color: colors.textSoft,
-    fontFamily: typography.body,
-    fontSize: 14,
-  },
-  profileName: {
-    color: colors.text,
-    fontFamily: typography.headlineStrong,
-    fontSize: 30,
-  },
-  profileStatCard: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.md,
-    flex: 1,
-    gap: spacing.xxs,
-    padding: spacing.md,
-  },
-  profileStatLabel: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 13,
-  },
-  profileStatValue: {
-    color: colors.primary,
-    fontFamily: typography.headline,
-    fontSize: 24,
-  },
-  profileStats: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  topBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  topBarLeft: {
-    flex: 1,
-  },
-  topBarRight: {
-    flex: 1,
-    flexDirection: "row",
-    gap: spacing.xs,
-    justifyContent: "flex-end",
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    achievementRow: {
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    activityCard: {
+      alignItems: "flex-start",
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    activityCopy: {
+      flex: 1,
+      gap: spacing.xxs,
+    },
+    activityIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.md,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    activityMeta: {
+      alignItems: "flex-end",
+      gap: spacing.xxs,
+    },
+    activityPoints: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 13,
+    },
+    activitySubtitle: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 13,
+      lineHeight: 19,
+    },
+    activityTime: {
+      color: themeColors.textSoft,
+      fontFamily: typography.body,
+      fontSize: 12,
+    },
+    activityTitle: {
+      color: themeColors.text,
+      fontFamily: typography.bodyBold,
+      fontSize: 15,
+    },
+    badgeCard: {
+      alignItems: "center",
+      flex: 1,
+      gap: spacing.sm,
+      padding: spacing.md,
+    },
+    badgeIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.pill,
+      height: 44,
+      justifyContent: "center",
+      width: 44,
+    },
+    badgeLabel: {
+      color: themeColors.text,
+      fontFamily: typography.bodyBold,
+      fontSize: 13,
+      textAlign: "center",
+    },
+    greeting: {
+      color: themeColors.primary,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    iconButton: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      height: 38,
+      justifyContent: "center",
+      width: 38,
+    },
+    linkLabel: {
+      color: themeColors.text,
+      fontFamily: typography.bodyBold,
+      fontSize: 15,
+    },
+    linkRow: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.md,
+    },
+    listWrap: {
+      gap: spacing.md,
+    },
+    profileAvatar: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.pill,
+      height: 72,
+      justifyContent: "center",
+      width: 72,
+    },
+    profileCard: {
+      gap: spacing.lg,
+    },
+    profileCopy: {
+      flex: 1,
+      gap: spacing.xs,
+    },
+    profileHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    profileMeta: {
+      color: themeColors.textSoft,
+      fontFamily: typography.body,
+      fontSize: 14,
+    },
+    profileName: {
+      color: themeColors.text,
+      fontFamily: typography.headlineStrong,
+      fontSize: 30,
+    },
+    profileStatCard: {
+      backgroundColor: themeColors.surfaceMuted,
+      borderRadius: radius.md,
+      flex: 1,
+      gap: spacing.xxs,
+      padding: spacing.md,
+    },
+    profileStatLabel: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 13,
+    },
+    profileStatValue: {
+      color: themeColors.primary,
+      fontFamily: typography.headline,
+      fontSize: 24,
+    },
+    profileStats: {
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    scrollContent: {
+      gap: spacing.xl,
+      paddingBottom: spacing.xl,
+    },
+    topBar: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    topBarLeft: {
+      flex: 1,
+    },
+    topBarRight: {
+      flex: 1,
+      flexDirection: "row",
+      gap: spacing.xs,
+      justifyContent: "flex-end",
+    },
+  });
