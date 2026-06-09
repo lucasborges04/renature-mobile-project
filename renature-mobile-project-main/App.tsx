@@ -29,6 +29,7 @@ import { colors } from "./src/theme/tokens";
 import type { ScreenId } from "./src/types/navigation";
 import { EditProfileScreen } from "./src/screens/edit-profile-screen";
 import { ThemeProvider } from "./src/theme/ThemeContext";
+import { FavoritesProvider } from "./src/context/FavoritesContext";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>("onboarding-1");
@@ -55,13 +56,15 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <StatusBar hidden />
-      {renderScreen(
-        currentScreen,
-        navigate,
-        selectedGuideId,
-        setSelectedGuideId,
-      )}
+      <FavoritesProvider>
+        <StatusBar hidden />
+        {renderScreen(
+          currentScreen,
+          navigate,
+          selectedGuideId,
+          setSelectedGuideId,
+        )}
+      </FavoritesProvider>
     </ThemeProvider>
   );
 }

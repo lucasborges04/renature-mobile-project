@@ -1,5 +1,4 @@
 import {
-  Bell,
   ChevronRight,
   Recycle,
   Settings,
@@ -125,7 +124,7 @@ export function ProfileScreen({
   const stats = [
     { label: "Nível", value: userData?.level || 1 },
     { label: "Pontos XP", value: userData?.points || 0 },
-    { label: "Reciclagens", value: history.length },
+    { label: "Registros", value: history.length },
   ];
 
   const unlockedList = userData?.unlockedAchievements || [];

@@ -11,6 +11,7 @@ import {
   Edit3,
   BookOpen,
   Trophy,
+  Bookmark,
   type LucideIcon,
 } from "lucide-react-native";
 import {
@@ -30,12 +31,13 @@ import {
   StatPill,
   SurfaceCard,
 } from "../components/primitives";
-import { homeTip } from "../data/content";
+import { homeTip, recyclingGuides } from "../data/content";
 import { getStitchStatusLabel } from "../config/stitch";
 import { radius, spacing, typography } from "../theme/tokens";
 import { useTheme } from "../theme/ThemeContext";
 import type { ScreenId } from "../types/navigation";
 import { userService } from "../services/userService";
+import { useFavorites } from "../context/FavoritesContext";
 
 type HomeScreenProps = {
   currentScreen: ScreenId;
@@ -46,6 +48,7 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { theme, toggleTheme, activeColors } = useTheme();
+  const { favorites } = useFavorites();
   const styles = createStyles(activeColors);
 
   useEffect(() => {
@@ -221,13 +224,35 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
 
       <SurfaceCard style={styles.categoryCard}>
         <SectionHeading
-          subtitle="Atalhos rápidos para tipos frequentes de descarte."
-          title="Mais buscados"
+          subtitle="Atalhos rápidos para os seus itens salvos."
+          title="Meus Favoritos"
         />
         <View style={styles.categoryRow}>
-          <CategoryPill icon={Droplets} label="Plástico" />
-          <CategoryPill icon={TreePine} label="Orgânico" />
-          <CategoryPill icon={Recycle} label="Vidro" />
+          {favorites.length === 0 ? (
+            <Text
+              style={{
+                color: activeColors.textMuted,
+                fontFamily: typography.body,
+              }}
+            >
+              Você ainda não favoritou nenhum guia.
+            </Text>
+          ) : (
+            favorites.map((id) => {
+              const guide = recyclingGuides[id as keyof typeof recyclingGuides];
+
+              if (!guide) return null;
+
+              return (
+                <Pressable
+                  key={id}
+                  onPress={() => onNavigate("detail" as ScreenId)}
+                >
+                  <CategoryPill icon={Bookmark} label={guide.title} />
+                </Pressable>
+              );
+            })
+          )}
         </View>
       </SurfaceCard>
 

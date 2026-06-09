@@ -5,7 +5,14 @@ import {
   Share2,
   CheckCircle2,
 } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Alert,
+} from "react-native";
 
 import { AppScreen } from "../components/app-screen";
 import {
@@ -14,13 +21,17 @@ import {
   SurfaceCard,
 } from "../components/primitives";
 import { recyclingGuides } from "../data/content";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
 import type { ScreenId } from "../types/navigation";
+import { useFavorites } from "../context/FavoritesContext";
+import { useTheme } from "../theme/ThemeContext";
+import { userService } from "../services/userService";
+import { useEffect } from "react";
 
 type DetailScreenProps = {
   currentScreen: ScreenId;
   onNavigate: (screen: ScreenId) => void;
-  guideId?: string; // NOVO: A tela agora espera um ID
+  guideId?: string;
 };
 
 export function DetailScreen({
@@ -28,10 +39,31 @@ export function DetailScreen({
   onNavigate,
   guideId = "plastico",
 }: DetailScreenProps) {
-  // Puxa o guia correspondente do banco de dados local. Se não achar, usa o plástico como fallback seguro.
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const isFav = isFavorite(guideId);
+
   const guide =
     recyclingGuides[guideId as keyof typeof recyclingGuides] ||
     recyclingGuides.plastico;
+
+  useEffect(() => {
+    async function checkReadAchievement() {
+      try {
+        const response = await userService.unlockAchievement("ALUNO_NATUREZA");
+
+        if (response && response.newlyUnlocked) {
+          Alert.alert(
+            "Conquista Desbloqueada! 🏆",
+            "Aluno da Natureza: Você leu seu primeiro conteúdo educativo!",
+          );
+        }
+      } catch (error) {}
+    }
+
+    checkReadAchievement();
+  }, []);
 
   return (
     <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
@@ -44,20 +76,31 @@ export function DetailScreen({
             onPress={() => onNavigate("learn")}
             style={styles.iconButton}
           >
-            <ArrowLeft color={colors.text} size={18} strokeWidth={2.4} />
+            <ArrowLeft color={activeColors.text} size={18} strokeWidth={2.4} />
           </Pressable>
           <Text style={styles.topTitle}>Guia de Reciclagem</Text>
           <View style={styles.topActions}>
-            <Pressable style={styles.iconButton}>
-              <Bookmark color={colors.textSoft} size={18} strokeWidth={2.2} />
+            <Pressable
+              style={styles.iconButton}
+              onPress={() => toggleFavorite(guideId)}
+            >
+              <Bookmark
+                color={isFav ? activeColors.primary : activeColors.textSoft}
+                fill={isFav ? activeColors.primary : "transparent"}
+                size={18}
+                strokeWidth={2.2}
+              />
             </Pressable>
             <Pressable style={styles.iconButton}>
-              <Share2 color={colors.textSoft} size={18} strokeWidth={2.2} />
+              <Share2
+                color={activeColors.textSoft}
+                size={18}
+                strokeWidth={2.2}
+              />
             </Pressable>
           </View>
         </View>
 
-        {/* HERO CARD DINÂMICO: A cor e o texto mudam conforme o material */}
         <SurfaceCard
           style={[styles.heroCard, { backgroundColor: guide.color }]}
         >
@@ -70,7 +113,7 @@ export function DetailScreen({
           {guide.canRecycle.map((item) => (
             <View key={item} style={styles.listItem}>
               <CheckCircle2
-                color={colors.primary}
+                color={activeColors.primary}
                 size={20}
                 strokeWidth={2.5}
               />
@@ -99,7 +142,7 @@ export function DetailScreen({
             <View key={mistake} style={styles.warningItem}>
               <View style={styles.warningIcon}>
                 <AlertTriangle
-                  color={colors.danger}
+                  color={activeColors.danger}
                   size={18}
                   strokeWidth={2.3}
                 />
@@ -109,7 +152,6 @@ export function DetailScreen({
           ))}
         </SurfaceCard>
 
-        {/* Botão de concluir retorna para o menu de estudos */}
         <AppButton
           label="Voltar para os guias"
           onPress={() => onNavigate("learn")}
@@ -119,117 +161,118 @@ export function DetailScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    gap: spacing.xl,
-    paddingBottom: spacing.xl,
-  },
-  heroCard: {
-    gap: spacing.md,
-    borderWidth: 0,
-    padding: spacing.xl,
-  },
-  heroSubtitle: {
-    color: "#ffffff",
-    fontFamily: typography.body,
-    fontSize: 15,
-    lineHeight: 22,
-    opacity: 0.9,
-  },
-  heroTitle: {
-    color: "#ffffff",
-    fontFamily: typography.headlineStrong,
-    fontSize: 34,
-  },
-  iconButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 38,
-    justifyContent: "center",
-    width: 38,
-  },
-  listWrap: {
-    gap: spacing.md,
-  },
-  safeListCard: {
-    gap: spacing.md,
-  },
-  listItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  listText: {
-    color: colors.text,
-    fontFamily: typography.bodySemiBold,
-    fontSize: 15,
-    flex: 1,
-  },
-  stepCard: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  stepCopy: {
-    flex: 1,
-  },
-  stepDescription: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  stepIcon: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.md,
-    height: 42,
-    justifyContent: "center",
-    width: 42,
-  },
-  stepNumber: {
-    color: colors.primary,
-    fontFamily: typography.headlineStrong,
-    fontSize: 18,
-  },
-  topActions: {
-    flexDirection: "row",
-    gap: spacing.xs,
-  },
-  topBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  topTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 20,
-  },
-  warningCard: {
-    gap: spacing.md,
-  },
-  warningIcon: {
-    alignItems: "center",
-    backgroundColor: "#ffebe9",
-    borderRadius: radius.md,
-    height: 38,
-    justifyContent: "center",
-    width: 38,
-  },
-  warningItem: {
-    alignItems: "center", // Centraliza o ícone e o texto verticalmente
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  warningText: {
-    color: colors.textMuted,
-    flex: 1,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    scrollContent: {
+      gap: spacing.xl,
+      paddingBottom: spacing.xl,
+    },
+    heroCard: {
+      gap: spacing.md,
+      borderWidth: 0,
+      padding: spacing.xl,
+    },
+    heroSubtitle: {
+      color: "#ffffff",
+      fontFamily: typography.body,
+      fontSize: 15,
+      lineHeight: 22,
+      opacity: 0.9,
+    },
+    heroTitle: {
+      color: "#ffffff",
+      fontFamily: typography.headlineStrong,
+      fontSize: 34,
+    },
+    iconButton: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      height: 38,
+      justifyContent: "center",
+      width: 38,
+    },
+    listWrap: {
+      gap: spacing.md,
+    },
+    safeListCard: {
+      gap: spacing.md,
+    },
+    listItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+    },
+    listText: {
+      color: themeColors.text,
+      fontFamily: typography.bodySemiBold,
+      fontSize: 15,
+      flex: 1,
+    },
+    stepCard: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    stepCopy: {
+      flex: 1,
+    },
+    stepDescription: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    stepIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.md,
+      height: 42,
+      justifyContent: "center",
+      width: 42,
+    },
+    stepNumber: {
+      color: themeColors.primary,
+      fontFamily: typography.headlineStrong,
+      fontSize: 18,
+    },
+    topActions: {
+      flexDirection: "row",
+      gap: spacing.xs,
+    },
+    topBar: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    topTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 20,
+    },
+    warningCard: {
+      gap: spacing.md,
+    },
+    warningIcon: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceSoft,
+      borderRadius: radius.md,
+      height: 38,
+      justifyContent: "center",
+      width: 38,
+    },
+    warningItem: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.md,
+    },
+    warningText: {
+      color: themeColors.textMuted,
+      flex: 1,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+  });

@@ -5,7 +5,7 @@ export const recyclingService = {
   async recycleWithBarcode(barcode: string) {
     try {
       const response = await api.post("/actions/barcode", { barcode });
-      return response.data; // Deve retornar { success: true, item: "Garrafa PET", points: 10 }
+      return response.data;
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || "Erro ao processar código de barras.",
@@ -13,7 +13,6 @@ export const recyclingService = {
     }
   },
 
-  // Envia o registro manual com o tipo de material selecionado
   async recycleManual(
     itemType:
       | "Plástico"
@@ -25,7 +24,6 @@ export const recyclingService = {
     description: string,
   ) {
     try {
-      // Agora enviamos 'itemType' (ex: "Plástico") e a 'description' (ex: "Garrafa de Suco")
       const response = await api.post("/actions/scan", {
         itemType,
         description,
@@ -34,6 +32,20 @@ export const recyclingService = {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || "Erro ao registrar reciclagem manual.",
+      );
+    }
+  },
+
+  async recycleWithImage(imageBase64: string) {
+    try {
+      const response = await api.post("/actions/image", {
+        imageBase64: imageBase64,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message ||
+          "Erro ao analisar a imagem pela Inteligência Artificial.",
       );
     }
   },

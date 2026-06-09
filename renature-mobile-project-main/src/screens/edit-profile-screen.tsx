@@ -14,9 +14,10 @@ import { useEffect, useState } from "react";
 
 import { AppScreen } from "../components/app-screen";
 import { AppButton, SurfaceCard } from "../components/primitives";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
 import type { ScreenId } from "../types/navigation";
 import { api } from "../services/api";
+import { useTheme } from "../theme/ThemeContext";
 
 type EditProfileScreenProps = {
   currentScreen: ScreenId;
@@ -31,6 +32,9 @@ export function EditProfileScreen({
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
 
   useEffect(() => {
     async function loadProfile() {
@@ -86,7 +90,7 @@ export function EditProfileScreen({
             onPress={() => onNavigate("profile")}
             style={styles.iconButton}
           >
-            <ArrowLeft color={colors.text} size={18} strokeWidth={2.4} />
+            <ArrowLeft color={activeColors.text} size={18} strokeWidth={2.4} />
           </Pressable>
           <Text style={styles.topTitle}>Editar Perfil</Text>
           <View style={{ width: 38 }} />
@@ -94,7 +98,7 @@ export function EditProfileScreen({
 
         {isLoading ? (
           <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={activeColors.primary} />
           </View>
         ) : (
           <View style={styles.formContainer}>
@@ -102,7 +106,7 @@ export function EditProfileScreen({
               <Text style={styles.inputLabel}>Como devemos te chamar?</Text>
               <View style={styles.inputRow}>
                 <UserRound
-                  color={colors.textSoft}
+                  color={activeColors.textSoft}
                   size={20}
                   strokeWidth={2.2}
                 />
@@ -111,7 +115,7 @@ export function EditProfileScreen({
                   value={name}
                   onChangeText={setName}
                   placeholder="Seu Nome"
-                  placeholderTextColor={colors.textSoft}
+                  placeholderTextColor={activeColors.textSoft}
                   maxLength={50}
                 />
               </View>
@@ -120,13 +124,17 @@ export function EditProfileScreen({
             <SurfaceCard style={styles.inputCard}>
               <Text style={styles.inputLabel}>Seu e-mail de acesso</Text>
               <View style={styles.inputRow}>
-                <Mail color={colors.textSoft} size={20} strokeWidth={2.2} />
+                <Mail
+                  color={activeColors.textSoft}
+                  size={20}
+                  strokeWidth={2.2}
+                />
                 <TextInput
                   style={styles.textInput}
                   value={email}
                   onChangeText={setEmail}
                   placeholder="email@exemplo.com"
-                  placeholderTextColor={colors.textSoft}
+                  placeholderTextColor={activeColors.textSoft}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -147,64 +155,65 @@ export function EditProfileScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  topBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: spacing.xl,
-  },
-  topTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 20,
-  },
-  iconButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 38,
-    justifyContent: "center",
-    width: 38,
-  },
-  formContainer: {
-    gap: spacing.md,
-  },
-  inputCard: {
-    gap: spacing.sm,
-    padding: spacing.lg,
-  },
-  inputLabel: {
-    color: colors.textMuted,
-    fontFamily: typography.bodyBold,
-    fontSize: 14,
-  },
-  inputRow: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    height: 50,
-  },
-  textInput: {
-    color: colors.text,
-    flex: 1,
-    fontFamily: typography.bodySemiBold,
-    fontSize: 16,
-    height: "100%",
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    topBar: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: spacing.xl,
+    },
+    topTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 20,
+    },
+    iconButton: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      height: 38,
+      justifyContent: "center",
+      width: 38,
+    },
+    formContainer: {
+      gap: spacing.md,
+    },
+    inputCard: {
+      gap: spacing.sm,
+      padding: spacing.lg,
+    },
+    inputLabel: {
+      color: themeColors.textMuted,
+      fontFamily: typography.bodyBold,
+      fontSize: 14,
+    },
+    inputRow: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceSoft,
+      borderColor: themeColors.border,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.md,
+      height: 50,
+    },
+    textInput: {
+      color: themeColors.text,
+      flex: 1,
+      fontFamily: typography.bodySemiBold,
+      fontSize: 16,
+      height: "100%",
+    },
+  });

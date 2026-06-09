@@ -1,4 +1,4 @@
-import { Bell, Crown, TrendingUp } from "lucide-react-native";
+import { Crown, TrendingUp } from "lucide-react-native";
 import {
   StyleSheet,
   Text,
@@ -15,9 +15,11 @@ import {
   StatPill,
   SurfaceCard,
 } from "../components/primitives";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
 import type { ScreenId } from "../types/navigation";
 import { api } from "../services/api";
+
+import { useTheme } from "../theme/ThemeContext";
 
 type RankingScreenProps = {
   currentScreen: ScreenId;
@@ -33,6 +35,9 @@ export function RankingScreen({
 
   const [backendUserRank, setBackendUserRank] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
 
   useEffect(() => {
     async function loadRankingData() {
@@ -80,9 +85,6 @@ export function RankingScreen({
             Olá,{" "}
             {userProfile?.name ? userProfile.name.split(" ")[0] : "Eco-Herói"}
           </Text>
-          <View style={styles.notifyButton}>
-            <Bell color={colors.textSoft} size={18} strokeWidth={2.2} />
-          </View>
         </View>
 
         <SectionHeading
@@ -92,7 +94,7 @@ export function RankingScreen({
 
         {isLoading ? (
           <View style={{ paddingVertical: spacing.xl, alignItems: "center" }}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={activeColors.primary} />
           </View>
         ) : (
           <>
@@ -105,7 +107,7 @@ export function RankingScreen({
                   >
                     <View style={styles.crownBadge}>
                       <Crown
-                        color={colors.tertiary}
+                        color={activeColors.tertiary}
                         size={18}
                         strokeWidth={2.2}
                       />
@@ -124,7 +126,7 @@ export function RankingScreen({
               <Text
                 style={{
                   textAlign: "center",
-                  color: colors.textMuted,
+                  color: activeColors.textMuted,
                   marginBottom: spacing.md,
                 }}
               >
@@ -207,7 +209,7 @@ export function RankingScreen({
               <SurfaceCard style={styles.progressCard}>
                 <View style={styles.progressHeader}>
                   <TrendingUp
-                    color={colors.primary}
+                    color={activeColors.primary}
                     size={20}
                     strokeWidth={2.2}
                   />
@@ -239,122 +241,124 @@ export function RankingScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: { gap: spacing.xl, paddingBottom: spacing.xl },
-  rankingListItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.surfaceMuted,
-  },
-  rankingListLeft: {
-    flexDirection: "row",
-    gap: spacing.md,
-    alignItems: "center",
-  },
-  rankingListRank: {
-    fontFamily: typography.headline,
-    fontSize: 18,
-    color: colors.textMuted,
-  },
-  rankingListName: {
-    fontFamily: typography.bodyBold,
-    fontSize: 16,
-    color: colors.text,
-  },
-  rankingListPoints: { fontFamily: typography.bodyBold, color: colors.primary },
-  crownBadge: {
-    alignItems: "center",
-    backgroundColor: colors.tertiarySoft,
-    borderRadius: radius.pill,
-    height: 36,
-    justifyContent: "center",
-    width: 36,
-  },
-  greeting: {
-    color: colors.primary,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  notifyButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  podiumCard: {
-    alignItems: "center",
-    flex: 1,
-    gap: spacing.xs,
-    padding: spacing.md,
-  },
-  podiumName: {
-    color: colors.text,
-    fontFamily: typography.bodyBold,
-    fontSize: 15,
-  },
-  podiumPoints: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 14,
-  },
-  podiumRank: {
-    color: colors.tertiary,
-    fontFamily: typography.headline,
-    fontSize: 22,
-  },
-  podiumWrap: { flexDirection: "row", gap: spacing.md },
-  progressCard: { gap: spacing.md },
-  progressFillWrap: { flex: 1 },
-  progressHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  progressHint: {
-    color: colors.primary,
-    fontFamily: typography.bodyBold,
-    fontSize: 14,
-  },
-  progressItem: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  progressLabel: {
-    color: colors.textMuted,
-    fontFamily: typography.bodyBold,
-    fontSize: 13,
-    width: 26,
-  },
-  progressList: { gap: spacing.md },
-  progressTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 24,
-  },
-  topBar: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  userCard: { gap: spacing.sm },
-  userHint: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  userPoints: {
-    color: colors.primary,
-    fontFamily: typography.headlineStrong,
-    fontSize: 32,
-  },
-  userTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 28,
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    scrollContent: { gap: spacing.xl, paddingBottom: spacing.xl },
+    rankingListItem: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: themeColors.surfaceMuted,
+    },
+    rankingListLeft: {
+      flexDirection: "row",
+      gap: spacing.md,
+      alignItems: "center",
+    },
+    rankingListRank: {
+      fontFamily: typography.headline,
+      fontSize: 18,
+      color: themeColors.textMuted,
+    },
+    rankingListName: {
+      fontFamily: typography.bodyBold,
+      fontSize: 16,
+      color: themeColors.text,
+    },
+    rankingListPoints: {
+      fontFamily: typography.bodyBold,
+      color: themeColors.primary,
+    },
+    crownBadge: {
+      alignItems: "center",
+      backgroundColor: themeColors.tertiarySoft,
+      borderRadius: radius.pill,
+      height: 36,
+      justifyContent: "center",
+      width: 36,
+    },
+    greeting: {
+      color: themeColors.primary,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    podiumCard: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      flex: 1,
+      gap: spacing.xs,
+      padding: spacing.md,
+    },
+    podiumName: {
+      color: themeColors.text,
+      fontFamily: typography.bodyBold,
+      fontSize: 15,
+    },
+    podiumPoints: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 14,
+    },
+    podiumRank: {
+      color: themeColors.tertiary,
+      fontFamily: typography.headline,
+      fontSize: 22,
+    },
+    podiumWrap: { flexDirection: "row", gap: spacing.md },
+    progressCard: { gap: spacing.md },
+    progressFillWrap: { flex: 1 },
+    progressHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.sm,
+    },
+    progressHint: {
+      color: themeColors.primary,
+      fontFamily: typography.bodyBold,
+      fontSize: 14,
+    },
+    progressItem: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.sm,
+    },
+    progressLabel: {
+      color: themeColors.textMuted,
+      fontFamily: typography.bodyBold,
+      fontSize: 13,
+      width: 26,
+    },
+    progressList: { gap: spacing.md },
+    progressTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 24,
+    },
+    topBar: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    userCard: { gap: spacing.sm },
+    userHint: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    userPoints: {
+      color: themeColors.primary,
+      fontFamily: typography.headlineStrong,
+      fontSize: 32,
+    },
+    userTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 28,
+    },
+  });

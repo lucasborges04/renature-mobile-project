@@ -22,4 +22,15 @@ export const userService = {
       );
     }
   },
+
+  unlockAchievement: async (achievementCode: string) => {
+    try {
+      const response = await api.post("/users/achievements/unlock", {
+        code: achievementCode,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

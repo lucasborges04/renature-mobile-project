@@ -27,9 +27,11 @@ import {
   SectionHeading,
   SurfaceCard,
 } from "../components/primitives";
-import { colors, radius, spacing, typography } from "../theme/tokens";
+import { radius, spacing, typography } from "../theme/tokens";
 import type { ScreenId } from "../types/navigation";
 import { recyclingService } from "../services/recyclingService";
+
+import { useTheme } from "../theme/ThemeContext";
 
 type ManualScreenProps = {
   currentScreen: ScreenId;
@@ -49,6 +51,9 @@ export function ManualScreen({ currentScreen, onNavigate }: ManualScreenProps) {
   const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { activeColors } = useTheme();
+  const styles = createStyles(activeColors);
 
   const handleManualSubmit = async () => {
     if (!selectedMaterial) {
@@ -106,15 +111,21 @@ export function ManualScreen({ currentScreen, onNavigate }: ManualScreenProps) {
               onPress={() => onNavigate("scanner")}
               style={styles.backButton}
             >
-              <ArrowLeft color={colors.text} size={20} strokeWidth={2.5} />
+              <ArrowLeft
+                color={activeColors.text}
+                size={20}
+                strokeWidth={2.5}
+              />
             </Pressable>
             <Text style={styles.headerTitle}>Registro Manual</Text>
             <View style={styles.spacer} />
           </View>
+
           <SectionHeading
             title="O que você está reciclando?"
             subtitle="Selecione o material principal do item para calcularmos os pontos corretamente."
           />
+
           <View style={styles.grid}>
             {materials.map((mat) => {
               const Icon = mat.icon;
@@ -135,7 +146,9 @@ export function ManualScreen({ currentScreen, onNavigate }: ManualScreenProps) {
                     ]}
                   >
                     <Icon
-                      color={isSelected ? colors.white : colors.primary}
+                      color={
+                        isSelected ? activeColors.white : activeColors.primary
+                      }
                       size={24}
                       strokeWidth={2.2}
                     />
@@ -152,6 +165,7 @@ export function ManualScreen({ currentScreen, onNavigate }: ManualScreenProps) {
               );
             })}
           </View>
+
           <SurfaceCard style={styles.inputCard}>
             <Text style={styles.inputLabel}>Nome do Produto (Opcional)</Text>
             <Text style={styles.inputHint}>
@@ -161,7 +175,7 @@ export function ManualScreen({ currentScreen, onNavigate }: ManualScreenProps) {
             <View style={styles.inputWrap}>
               <TextInput
                 placeholder="Descreva o item..."
-                placeholderTextColor={colors.textSoft}
+                placeholderTextColor={activeColors.textSoft}
                 style={styles.input}
                 value={description}
                 onChangeText={setDescription}
@@ -169,6 +183,7 @@ export function ManualScreen({ currentScreen, onNavigate }: ManualScreenProps) {
               />
             </View>
           </SurfaceCard>
+
           <AppButton
             icon={CheckCircle}
             label={isSubmitting ? "Registrando..." : "Confirmar Reciclagem"}
@@ -180,101 +195,102 @@ export function ManualScreen({ currentScreen, onNavigate }: ManualScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  keyboardWrap: {
-    flex: 1,
-  },
-  spacer: {
-    width: 40,
-  },
-  backButton: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.pill,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.md,
-  },
-  header: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingBottom: spacing.sm,
-  },
-  headerTitle: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 20,
-  },
-  iconWrap: {
-    alignItems: "center",
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.pill,
-    height: 50,
-    justifyContent: "center",
-    width: 50,
-  },
-  iconWrapActive: {
-    backgroundColor: colors.primary,
-  },
-  input: {
-    color: colors.text,
-    flex: 1,
-    fontFamily: typography.bodySemiBold,
-    fontSize: 15,
-  },
-  inputCard: {
-    gap: spacing.sm,
-  },
-  inputHint: {
-    color: colors.textMuted,
-    fontFamily: typography.body,
-    fontSize: 13,
-    lineHeight: 18,
-    marginBottom: spacing.xs,
-  },
-  inputLabel: {
-    color: colors.text,
-    fontFamily: typography.headline,
-    fontSize: 18,
-  },
-  inputWrap: {
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    minHeight: 56,
-    paddingHorizontal: spacing.md,
-  },
-  materialCard: {
-    alignItems: "center",
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    flexBasis: "47%",
-    gap: spacing.sm,
-    padding: spacing.md,
-  },
-  materialCardActive: {
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.primary,
-  },
-  materialLabel: {
-    color: colors.text,
-    fontFamily: typography.bodyBold,
-    fontSize: 15,
-  },
-  materialLabelActive: {
-    color: colors.primaryDeep,
-  },
-  scrollContent: {
-    gap: spacing.xl,
-    paddingBottom: spacing.xl,
-  },
-});
+const createStyles = (themeColors: any) =>
+  StyleSheet.create({
+    keyboardWrap: {
+      flex: 1,
+    },
+    spacer: {
+      width: 40,
+    },
+    backButton: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceMuted,
+      borderRadius: radius.pill,
+      height: 40,
+      justifyContent: "center",
+      width: 40,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.md,
+    },
+    header: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingBottom: spacing.sm,
+    },
+    headerTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 20,
+    },
+    iconWrap: {
+      alignItems: "center",
+      backgroundColor: themeColors.primarySoft,
+      borderRadius: radius.pill,
+      height: 50,
+      justifyContent: "center",
+      width: 50,
+    },
+    iconWrapActive: {
+      backgroundColor: themeColors.primary,
+    },
+    input: {
+      color: themeColors.text,
+      flex: 1,
+      fontFamily: typography.bodySemiBold,
+      fontSize: 15,
+    },
+    inputCard: {
+      gap: spacing.sm,
+    },
+    inputHint: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 13,
+      lineHeight: 18,
+      marginBottom: spacing.xs,
+    },
+    inputLabel: {
+      color: themeColors.text,
+      fontFamily: typography.headline,
+      fontSize: 18,
+    },
+    inputWrap: {
+      backgroundColor: themeColors.surfaceMuted,
+      borderColor: themeColors.border,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      minHeight: 56,
+      paddingHorizontal: spacing.md,
+    },
+    materialCard: {
+      alignItems: "center",
+      backgroundColor: themeColors.surfaceRaised,
+      borderColor: themeColors.border,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      flexBasis: "47%",
+      gap: spacing.sm,
+      padding: spacing.md,
+    },
+    materialCardActive: {
+      backgroundColor: themeColors.primarySoft,
+      borderColor: themeColors.primary,
+    },
+    materialLabel: {
+      color: themeColors.text,
+      fontFamily: typography.bodyBold,
+      fontSize: 15,
+    },
+    materialLabelActive: {
+      color: themeColors.primary,
+    },
+    scrollContent: {
+      gap: spacing.xl,
+      paddingBottom: spacing.xl,
+    },
+  });

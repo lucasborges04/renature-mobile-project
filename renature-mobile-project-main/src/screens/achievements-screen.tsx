@@ -6,6 +6,21 @@ import {
   Recycle,
   Droplets,
   Shield,
+  Award,
+  Book,
+  Flag,
+  Target,
+  Star,
+  Sparkles,
+  FileText,
+  ScrollText,
+  Sprout,
+  Trees,
+  Smartphone,
+  Cpu,
+  Monitor,
+  Layers,
+  Earth,
   type LucideIcon,
 } from "lucide-react-native";
 import {
@@ -45,32 +60,207 @@ const MASTER_ACHIEVEMENTS = [
     lockedText: "Faça 1 reciclagem",
   },
   {
-    code: "NIVEL_2",
-    title: "Eco-Iniciante",
-    description: "Alcançou o Nível 2 na sua jornada.",
-    icon: Zap,
-    lockedText: "Requer Nível 2",
-  },
-  {
-    code: "RECICLADOR_10",
-    title: "Reciclador Frequente",
-    description: "Registrou 10 itens recicláveis no aplicativo.",
+    code: "RECICLADOR_INICIANTE",
+    title: "Reciclador Iniciante",
+    description: "Reciclou 10 itens diferentes.",
     icon: Recycle,
     lockedText: "Recicle 10 itens",
   },
   {
-    code: "MESTRE_PLASTICO",
-    title: "Mestre do Plástico",
+    code: "RECICLADOR_DEDICADO",
+    title: "Reciclador Dedicado",
+    description: "Reciclou 50 itens diferentes.",
+    icon: Recycle,
+    lockedText: "Recicle 50 itens",
+  },
+  {
+    code: "MESTRE_RECICLAGEM",
+    title: "Mestre da Reciclagem",
+    description: "Reciclou 100 itens diferentes.",
+    icon: Award,
+    lockedText: "Recicle 100 itens",
+  },
+  {
+    code: "ALUNO_NATUREZA",
+    title: "Aluno da Natureza",
+    description: "Leu seu primeiro conteúdo educativo.",
+    icon: Book,
+    lockedText: "Aprenda 1 conteúdo",
+  },
+  {
+    code: "DESAFIO_ACEITO",
+    title: "Desafio Aceito",
+    description: "Completou seu primeiro desafio.",
+    icon: Flag,
+    lockedText: "Cumpra 1 desafio",
+  },
+  {
+    code: "PERSISTENTE",
+    title: "Persistente",
+    description: "Completou 10 desafios.",
+    icon: Target,
+    lockedText: "Cumpra 10 desafios",
+  },
+  {
+    code: "PRIMEIROS_PONTOS",
+    title: "Primeiros Pontos",
+    description: "Alcançou 100 pontos.",
+    icon: Star,
+    lockedText: "Alcance 100 pts",
+  },
+  {
+    code: "ESPECIALISTA_SUSTENTAVEL",
+    title: "Especialista Sustentável",
+    description: "Alcançou 1000 pontos.",
+    icon: Sparkles,
+    lockedText: "Alcance 1000 pts",
+  },
+  {
+    code: "PLASTICO_5",
+    title: "Novato do Plástico",
     description: "Reciclou 5 itens de plástico.",
-    icon: Droplets,
+    icon: Award,
     lockedText: "Recicle 5 plásticos",
   },
   {
-    code: "TOP_RANKING",
-    title: "No Topo do Mundo",
-    description: "Alcançou o Top 3 no Ranking global.",
+    code: "PLASTICO_20",
+    title: "Capitão Plástico",
+    description: "Reciclou 20 itens de plástico.",
+    icon: Award,
+    lockedText: "Recicle 20 plásticos",
+  },
+  {
+    code: "PLASTICO_100",
+    title: "Herói do Plástico",
+    description: "Reciclou 100 itens de plástico.",
+    icon: Award,
+    lockedText: "Recicle 100 plásticos",
+  },
+  {
+    code: "VIDRO_5",
+    title: "Novato do Vidro",
+    description: "Reciclou 5 itens de vidro.",
+    icon: Star,
+    lockedText: "Recicle 5 vidros",
+  },
+  {
+    code: "VIDRO_20",
+    title: "Capitão do Vidro",
+    description: "Reciclou 20 itens de vidro.",
+    icon: Star,
+    lockedText: "Recicle 20 vidros",
+  },
+  {
+    code: "VIDRO_100",
+    title: "Herói do Vidro",
+    description: "Reciclou 100 itens de vidro.",
+    icon: Star,
+    lockedText: "Recicle 100 vidros",
+  },
+  {
+    code: "METAL_5",
+    title: "Novato dos Metais",
+    description: "Reciclou 5 itens de metal.",
+    icon: Zap, // Lucide Bolt alternative
+    lockedText: "Recicle 5 metais",
+  },
+  {
+    code: "METAL_20",
+    title: "Capitão dos Metais",
+    description: "Reciclou 20 itens de metal.",
+    icon: Zap,
+    lockedText: "Recicle 20 metais",
+  },
+  {
+    code: "METAL_100",
+    title: "Caçador de Metais",
+    description: "Reciclou 100 itens de metal.",
+    icon: Zap,
+    lockedText: "Recicle 100 metais",
+  },
+  {
+    code: "PAPEL_5",
+    title: "Amigo do Papel",
+    description: "Reciclou 5 itens de papel.",
+    icon: FileText,
+    lockedText: "Recicle 5 papéis",
+  },
+  {
+    code: "PAPEL_20",
+    title: "Guardião do Papel",
+    description: "Reciclou 20 itens de papel.",
+    icon: ScrollText,
+    lockedText: "Recicle 20 papéis",
+  },
+  {
+    code: "PAPEL_100",
+    title: "Mestre do Papel",
+    description: "Reciclou 100 itens de papel.",
+    icon: Award,
+    lockedText: "Recicle 100 papéis",
+  },
+  {
+    code: "ORGANICO_5",
+    title: "Compostador Iniciante",
+    description: "Reciclou 5 resíduos orgânicos.",
+    icon: Sprout,
+    lockedText: "Recicle 5 orgânicos",
+  },
+  {
+    code: "ORGANICO_20",
+    title: "Guardião Orgânico",
+    description: "Reciclou 20 resíduos orgânicos.",
+    icon: Leaf,
+    lockedText: "Recicle 20 orgânicos",
+  },
+  {
+    code: "ORGANICO_100",
+    title: "Mestre da Compostagem",
+    description: "Reciclou 100 resíduos orgânicos.",
+    icon: Trees,
+    lockedText: "Recicle 100 orgânicos",
+  },
+  {
+    code: "ELETRONICO_5",
+    title: "Coletor Tecnológico",
+    description: "Reciclou 5 resíduos eletrônicos.",
+    icon: Smartphone,
+    lockedText: "Recicle 5 eletrônicos",
+  },
+  {
+    code: "ELETRONICO_20",
+    title: "Defensor Digital",
+    description: "Reciclou 20 resíduos eletrônicos.",
+    icon: Cpu,
+    lockedText: "Recicle 20 eletrônicos",
+  },
+  {
+    code: "ELETRONICO_100",
+    title: "Mestre dos Eletrônicos",
+    description: "Reciclou 100 resíduos eletrônicos.",
+    icon: Monitor,
+    lockedText: "Recicle 100 eletrônicos",
+  },
+  {
+    code: "MESTRE_DA_SEPARACAO",
+    title: "Mestre da Separação",
+    description: "Reciclou pelo menos um item de cada categoria.",
+    icon: Layers,
+    lockedText: "Recicle 1 de cada tipo",
+  },
+  {
+    code: "NIVEL_5",
+    title: "Defensor da Natureza",
+    description: "Atingiu o Nível 5 no aplicativo.",
     icon: Shield,
-    lockedText: "Chegue ao Top 3",
+    lockedText: "Chegue ao Nível 5",
+  },
+  {
+    code: "SALVADOR_DO_PLANETA",
+    title: "Salvador do Planeta",
+    description: "Desbloqueou todas as conquistas disponíveis.",
+    icon: Earth,
+    lockedText: "Desbloqueie tudo",
   },
 ];
 
@@ -153,7 +343,7 @@ export function AchievementsScreen({
           </View>
 
           <SectionHeading
-            subtitle="Colecione insígnias ajudando o planeta e destrave novas recompensas."
+            subtitle="Colecione insígnias ajudando o planeta."
             title="Suas Conquistas"
           />
 
@@ -172,17 +362,17 @@ export function AchievementsScreen({
             />
           </SurfaceCard>
 
-          <View style={styles.listWrap}>
-            {dynamicAchievements.map((achievement) => (
-              <AchievementCard key={achievement.title} item={achievement} />
-            ))}
-          </View>
-
           <AppButton
             icon={ChevronRight}
             label="Ver ranking e pontuação"
             onPress={() => onNavigate("ranking")}
           />
+
+          <View style={styles.listWrap}>
+            {dynamicAchievements.map((achievement) => (
+              <AchievementCard key={achievement.title} item={achievement} />
+            ))}
+          </View>
         </ScrollView>
       )}
     </AppScreen>
@@ -308,16 +498,6 @@ const createStyles = (themeColors: any) =>
     },
     listWrap: {
       gap: spacing.md,
-    },
-    notifyButton: {
-      alignItems: "center",
-      backgroundColor: themeColors.surfaceRaised,
-      borderColor: themeColors.border,
-      borderRadius: radius.pill,
-      borderWidth: 1,
-      height: 40,
-      justifyContent: "center",
-      width: 40,
     },
     scrollContent: {
       gap: spacing.xl,
