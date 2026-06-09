@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Achievement = require("../models/Achievement");
 
 const userController = {
   async getProfile(req, res) {
@@ -80,6 +81,43 @@ const userController = {
     } catch (error) {
       console.error("Erro ao buscar ranking:", error);
       res.status(500).json({ message: "Erro interno ao buscar o ranking." });
+    }
+  },
+
+  async unlockAchievement(req, res) {
+    try {
+      const { code } = req.body;
+      const userId = req.user._id;
+
+      const achievement = await Achievement.findOne({ code });
+
+      if (!achievement) {
+        return res
+          .status(404)
+          .json({ message: "Código de conquista inválido." });
+      }
+
+      const user = await User.findById(userId);
+
+      const alreadyHas = user.unlockedAchievements.includes(achievement._id);
+
+      if (alreadyHas) {
+        return res
+          .status(400)
+          .json({ message: "Conquista já desbloqueada anteriormente." });
+      }
+
+      user.unlockedAchievements.push(achievement._id);
+      await user.save();
+
+      return res.status(200).json({
+        message: "Conquista desbloqueada com sucesso!",
+        newlyUnlocked: true,
+        achievement: achievement,
+      });
+    } catch (error) {
+      console.error("Erro ao desbloquear conquista:", error);
+      res.status(500).json({ message: "Erro interno ao processar conquista." });
     }
   },
 };
