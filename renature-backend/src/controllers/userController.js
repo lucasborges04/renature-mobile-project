@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Achievement = require("../models/Achievement");
+const sendEmail = require("../services/sendEmail");
 const bcrypt = require("bcrypt");
 
 const userController = {
@@ -96,6 +97,114 @@ const userController = {
     } catch (error) {
       console.error("Erro ao trocar senha:", error);
       res.status(500).json({ message: "Erro interno ao atualizar a senha." });
+    }
+  },
+
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "O e-mail é obrigatório." });
+      }
+
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+      if (!user) {
+        return res
+          .status(200)
+          .json({
+            message: "Se o e-mail existir no sistema, um código foi enviado.",
+          });
+      }
+
+      const pinCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const expireDate = new Date(Date.now() + 15 * 60 * 1000);
+
+      user.resetPasswordToken = pinCode;
+      user.resetPasswordExpire = expireDate;
+      await user.save();
+
+      const messageText = `Olá, ${user.name}.\n\nVocê solicitou a redefinição de senha para a sua conta no Renature App.\n\nSeu código de verificação é: ${pinCode}\n\nEste código é válido por 15 minutos. Se não solicitou esta alteração, ignore este e-mail.`;
+
+      try {
+        await sendEmail({
+          email: user.email,
+          subject: "Recuperação de Senha - Renature App",
+          message: messageText,
+        });
+
+        res
+          .status(200)
+          .json({ message: "Código de recuperação enviado para o e-mail." });
+      } catch (emailError) {
+        console.error("Erro ao enviar e-mail:", emailError);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+
+        return res
+          .status(500)
+          .json({
+            message: "Não foi possível enviar o e-mail de recuperação.",
+          });
+      }
+    } catch (error) {
+      console.error("Erro no forgotPassword:", error);
+      res
+        .status(500)
+        .json({ message: "Erro interno ao processar a recuperação de senha." });
+    }
+  },
+
+  async resetPassword(req, res) {
+    try {
+      const { email, token, newPassword } = req.body;
+
+      if (!email || !token || !newPassword) {
+        return res
+          .status(400)
+          .json({ message: "Todos os campos são obrigatórios." });
+      }
+
+      if (newPassword.length < 8) {
+        return res
+          .status(400)
+          .json({ message: "A nova senha deve ter pelo menos 8 caracteres." });
+      }
+
+      const user = await User.findOne({
+        email: email.toLowerCase().trim(),
+        resetPasswordToken: token,
+        resetPasswordExpire: { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return res
+          .status(400)
+          .json({ message: "Código de verificação inválido ou expirado." });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: { password: hashedPassword },
+          $unset: { resetPasswordToken: 1, resetPasswordExpire: 1 },
+        },
+      );
+
+      res
+        .status(200)
+        .json({
+          message: "Senha redefinida com sucesso! Você já pode fazer login.",
+        });
+    } catch (error) {
+      console.error("Erro no resetPassword:", error);
+      res.status(500).json({ message: "Erro interno ao redefinir a senha." });
     }
   },
 

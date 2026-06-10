@@ -9,5 +9,7 @@ router.get("/ranking", protect, userController.getRanking);
 router.put("/profile", protect, userController.updateProfile);
 router.put("/change-password", protect, userController.changePassword);
 router.post("/achievements/unlock", protect, userController.unlockAchievement);
+router.post("/forgot-password", userController.forgotPassword);
+router.post("/reset-password", userController.resetPassword);
 
 module.exports = router;

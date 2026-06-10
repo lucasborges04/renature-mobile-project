@@ -20,16 +20,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       minlength: [8, "A senha deve ter no mínimo 8 caracteres"],
     },
-    authProvider: {
-      type: String,
-      enum: ["local", "google"],
-      default: "local",
-    },
     avatar: {
       type: String,
       default: "",
     },
-
     points: {
       type: Number,
       default: 0,
@@ -48,6 +42,12 @@ const UserSchema = new mongoose.Schema(
         ref: "Achievement",
       },
     ],
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpire: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

@@ -35,20 +35,4 @@ export const authService = {
       );
     }
   },
-
-  async googleLogin(idToken: string) {
-    try {
-      const response = await api.post("/auth/google", { idToken });
-
-      if (response.data.token) {
-        await SecureStore.setItemAsync("token", response.data.token);
-      }
-
-      return response.data;
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || "Erro ao realizar login com Google",
-      );
-    }
-  },
 };

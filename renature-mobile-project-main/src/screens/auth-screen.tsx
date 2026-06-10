@@ -1,6 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
 import {
-  Apple,
   ArrowRight,
   Leaf,
   Lock,
@@ -22,9 +21,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useState, useEffect } from "react";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
+import { useState } from "react";
 
 import { AppButton, StatPill, SurfaceCard } from "../components/primitives";
 import { authBenefits } from "../data/content";
@@ -33,8 +30,7 @@ import { radius, spacing, typography } from "../theme/tokens";
 import { useTheme } from "../theme/ThemeContext";
 import type { ScreenId } from "../types/navigation";
 import { authService } from "../services/authService";
-
-WebBrowser.maybeCompleteAuthSession();
+import { api } from "../services/api";
 
 type AuthScreenProps = {
   onNavigate: (screen: ScreenId) => void;
@@ -48,16 +44,20 @@ type FeedbackState = {
   action?: () => void;
 };
 
+type AuthMode = "login" | "register" | "forgot" | "reset";
+
 export function AuthScreen({ onNavigate }: AuthScreenProps) {
   const { activeColors } = useTheme();
   const styles = createStyles(activeColors);
 
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [resetCode, setResetCode] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [feedback, setFeedback] = useState<FeedbackState>({
@@ -66,41 +66,6 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
     title: "",
     message: "",
   });
-
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId:
-      "75150017031-h3msun3o4eemske9i58150nv7ejuejm3.apps.googleusercontent.com",
-  });
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { id_token } = response.params;
-      handleGoogleLogin(id_token);
-    }
-  }, [response]);
-
-  const handleGoogleLogin = async (idToken: string) => {
-    try {
-      setIsLoading(true);
-      const data = await authService.googleLogin(idToken);
-      setFeedback({
-        visible: true,
-        type: "success",
-        title: "Sucesso!",
-        message: `Bem-vindo pelo Google, ${data.user.name}!`,
-        action: () => onNavigate("home"),
-      });
-    } catch (error: any) {
-      setFeedback({
-        visible: true,
-        type: "error",
-        title: "Erro no Google",
-        message: error.message || "Não foi possível conectar com o Google.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -156,7 +121,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
         action: () => {
           setName("");
           setPassword("");
-          setIsLoginMode(true);
+          setAuthMode("login");
           setShowPassword(false);
         },
       });
@@ -172,20 +137,89 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
     }
   };
 
-  const handleSubmit = () => {
-    if (isLoginMode) {
-      handleLogin();
-    } else {
-      handleRegister();
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setFeedback({
+        visible: true,
+        type: "warning",
+        title: "Atenção",
+        message: "Digite o seu e-mail para receber o código.",
+      });
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const res = await api.post("/users/forgot-password", {
+        email: email.trim(),
+      });
+      setFeedback({
+        visible: true,
+        type: "success",
+        title: "Código Enviado!",
+        message:
+          res.data.message || "Verifique sua caixa de entrada (e o spam).",
+        action: () => setAuthMode("reset"),
+      });
+    } catch (error: any) {
+      setFeedback({
+        visible: true,
+        type: "error",
+        title: "Ops!",
+        message:
+          error.response?.data?.message || "Não foi possível enviar o código.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const toggleMode = () => {
-    setIsLoginMode(!isLoginMode);
-    setName("");
-    setEmail("");
-    setPassword("");
-    setShowPassword(false);
+  const handleResetPassword = async () => {
+    if (!resetCode || !password) {
+      setFeedback({
+        visible: true,
+        type: "warning",
+        title: "Atenção",
+        message: "Preencha o código e a nova senha.",
+      });
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const res = await api.post("/users/reset-password", {
+        email: email.trim(),
+        token: resetCode.trim(),
+        newPassword: password,
+      });
+      setFeedback({
+        visible: true,
+        type: "success",
+        title: "Senha Redefinida!",
+        message: res.data.message || "Sua senha foi alterada com sucesso.",
+        action: () => {
+          setAuthMode("login");
+          setPassword("");
+          setResetCode("");
+          setShowPassword(false);
+        },
+      });
+    } catch (error: any) {
+      setFeedback({
+        visible: true,
+        type: "error",
+        title: "Erro na Redefinição",
+        message:
+          error.response?.data?.message || "Código inválido ou expirado.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (authMode === "login") handleLogin();
+    else if (authMode === "register") handleRegister();
+    else if (authMode === "forgot") handleForgotPassword();
+    else if (authMode === "reset") handleResetPassword();
   };
 
   const closeFeedback = () => {
@@ -207,6 +241,23 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
       case "error":
         return <AlertTriangle color="#EF4444" size={54} strokeWidth={2} />;
     }
+  };
+
+  const getFormTitle = () => {
+    if (authMode === "login") return "Bem-vindo de volta";
+    if (authMode === "register") return "Crie sua conta";
+    if (authMode === "forgot") return "Recuperar Senha";
+    if (authMode === "reset") return "Criar Nova Senha";
+  };
+
+  const getFormSubtitle = () => {
+    if (authMode === "login")
+      return "Entre para continuar sua jornada ecológica.";
+    if (authMode === "register") return "Junte-se a nós e comece a pontuar.";
+    if (authMode === "forgot")
+      return "Digite seu e-mail para receber um código de 6 dígitos.";
+    if (authMode === "reset")
+      return "Digite o código que chegou no e-mail e a sua nova senha.";
   };
 
   return (
@@ -257,16 +308,10 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
           <SurfaceCard style={styles.formCard}>
             <StatPill label={stitchConfig.projectTitle} tone="secondary" />
 
-            <Text style={styles.formTitle}>
-              {isLoginMode ? "Bem-vindo de volta" : "Crie sua conta"}
-            </Text>
-            <Text style={styles.formSubtitle}>
-              {isLoginMode
-                ? "Entre para continuar sua jornada ecológica."
-                : "Junte-se a nós e comece a pontuar."}
-            </Text>
+            <Text style={styles.formTitle}>{getFormTitle()}</Text>
+            <Text style={styles.formSubtitle}>{getFormSubtitle()}</Text>
 
-            {!isLoginMode && (
+            {authMode === "register" && (
               <View style={styles.field}>
                 <Text style={styles.fieldLabel}>Nome</Text>
                 <View style={styles.inputWrap}>
@@ -287,94 +332,144 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
               </View>
             )}
 
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>E-mail</Text>
-              <View style={styles.inputWrap}>
-                <Mail
-                  color={activeColors.textSoft}
-                  size={18}
-                  strokeWidth={2.2}
-                />
-                <TextInput
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  placeholder="mariana@terra.app"
-                  placeholderTextColor={activeColors.textSoft}
-                  style={styles.input}
-                  value={email}
-                  onChangeText={setEmail}
-                />
+            {(authMode === "login" ||
+              authMode === "register" ||
+              authMode === "forgot") && (
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>E-mail</Text>
+                <View style={styles.inputWrap}>
+                  <Mail
+                    color={activeColors.textSoft}
+                    size={18}
+                    strokeWidth={2.2}
+                  />
+                  <TextInput
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    placeholder="mariana@terra.app"
+                    placeholderTextColor={activeColors.textSoft}
+                    style={styles.input}
+                    value={email}
+                    onChangeText={setEmail}
+                  />
+                </View>
               </View>
-            </View>
+            )}
 
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Senha</Text>
-              <View style={styles.inputWrap}>
-                <Lock
-                  color={activeColors.textSoft}
-                  size={18}
-                  strokeWidth={2.2}
-                />
-                <TextInput
-                  placeholder="••••••••"
-                  placeholderTextColor={activeColors.textSoft}
-                  secureTextEntry={!showPassword}
-                  style={styles.input}
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <Pressable onPress={() => setShowPassword(!showPassword)}>
-                  {showPassword ? (
-                    <EyeOff color={activeColors.textSoft} size={18} />
-                  ) : (
-                    <Eye color={activeColors.textSoft} size={18} />
-                  )}
-                </Pressable>
+            {authMode === "reset" && (
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Código de 6 dígitos</Text>
+                <View style={styles.inputWrap}>
+                  <Lock
+                    color={activeColors.textSoft}
+                    size={18}
+                    strokeWidth={2.2}
+                  />
+                  <TextInput
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    placeholder="Ex: 123456"
+                    placeholderTextColor={activeColors.textSoft}
+                    style={styles.input}
+                    value={resetCode}
+                    onChangeText={setResetCode}
+                  />
+                </View>
               </View>
-            </View>
+            )}
 
-            {isLoginMode && (
-              <Pressable style={styles.textLink}>
+            {(authMode === "login" ||
+              authMode === "register" ||
+              authMode === "reset") && (
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>
+                  {authMode === "reset" ? "Nova Senha" : "Senha"}
+                </Text>
+                <View style={styles.inputWrap}>
+                  <Lock
+                    color={activeColors.textSoft}
+                    size={18}
+                    strokeWidth={2.2}
+                  />
+                  <TextInput
+                    placeholder="••••••••"
+                    placeholderTextColor={activeColors.textSoft}
+                    secureTextEntry={!showPassword}
+                    style={styles.input}
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                  <Pressable onPress={() => setShowPassword(!showPassword)}>
+                    {showPassword ? (
+                      <EyeOff color={activeColors.textSoft} size={18} />
+                    ) : (
+                      <Eye color={activeColors.textSoft} size={18} />
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+            )}
+
+            {authMode === "login" && (
+              <Pressable
+                style={styles.textLink}
+                onPress={() => setAuthMode("forgot")}
+              >
                 <Text style={styles.textLinkLabel}>Esqueceu a senha?</Text>
               </Pressable>
             )}
 
-            <Text style={styles.divider}>Ou</Text>
-
-            <Pressable
-              style={styles.socialButton}
-              onPress={() => promptAsync()}
-              disabled={!request || isLoading}
-            >
-              <View style={styles.socialIcon}>
-                <Mail
-                  color={activeColors.primary}
-                  size={18}
-                  strokeWidth={2.2}
-                />
-              </View>
-              <Text style={styles.socialLabel}>
-                {isLoading ? "Aguarde..." : "Continuar com Google"}
-              </Text>
-            </Pressable>
-
             <AppButton
-              icon={ArrowRight}
+              icon={authMode !== "forgot" ? ArrowRight : undefined}
               label={
-                isLoading ? "Aguarde..." : isLoginMode ? "Entrar" : "Cadastrar"
+                isLoading
+                  ? "Aguarde..."
+                  : authMode === "login"
+                    ? "Entrar"
+                    : authMode === "register"
+                      ? "Cadastrar"
+                      : authMode === "forgot"
+                        ? "Enviar Código"
+                        : "Redefinir Senha"
               }
               onPress={handleSubmit}
             />
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                {isLoginMode ? "Ainda não tem conta?" : "Já tem uma conta?"}
-              </Text>
-              <Pressable onPress={toggleMode}>
-                <Text style={styles.footerLink}>
-                  {isLoginMode ? "Cadastre-se" : "Entrar"}
-                </Text>
-              </Pressable>
+              {authMode === "login" || authMode === "register" ? (
+                <>
+                  <Text style={styles.footerText}>
+                    {authMode === "login"
+                      ? "Ainda não tem conta?"
+                      : "Já tem uma conta?"}
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      setAuthMode(authMode === "login" ? "register" : "login");
+                      setName("");
+                      setPassword("");
+                      setShowPassword(false);
+                    }}
+                  >
+                    <Text style={styles.footerLink}>
+                      {authMode === "login" ? "Cadastre-se" : "Entrar"}
+                    </Text>
+                  </Pressable>
+                </>
+              ) : (
+                <Pressable
+                  onPress={() => {
+                    setAuthMode("login");
+                    setPassword("");
+                    setResetCode("");
+                    setShowPassword(false);
+                  }}
+                >
+                  <Text style={styles.footerLink}>
+                    Lembrou a senha? Voltar para o Login
+                  </Text>
+                </Pressable>
+              )}
             </View>
           </SurfaceCard>
         </ScrollView>
@@ -399,11 +494,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
 
 const createStyles = (themeColors: any) =>
   StyleSheet.create({
-    benefits: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: spacing.sm,
-    },
+    benefits: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
     bgBlobBottom: {
       backgroundColor: themeColors.tertiarySoft,
       borderRadius: radius.pill,
@@ -424,11 +515,7 @@ const createStyles = (themeColors: any) =>
       top: -80,
       width: 260,
     },
-    brand: {
-      alignItems: "center",
-      flexDirection: "row",
-      gap: spacing.sm,
-    },
+    brand: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
     brandIcon: {
       alignItems: "center",
       backgroundColor: themeColors.primarySoft,
@@ -442,15 +529,7 @@ const createStyles = (themeColors: any) =>
       fontFamily: typography.headlineStrong,
       fontSize: 26,
     },
-    divider: {
-      color: themeColors.textSoft,
-      fontFamily: typography.bodyBold,
-      fontSize: 13,
-      textAlign: "center",
-    },
-    field: {
-      gap: spacing.xs,
-    },
+    field: { gap: spacing.xs },
     fieldLabel: {
       color: themeColors.textMuted,
       fontFamily: typography.bodyBold,
@@ -461,6 +540,7 @@ const createStyles = (themeColors: any) =>
       flexDirection: "row",
       gap: spacing.xs,
       justifyContent: "center",
+      marginTop: spacing.sm,
     },
     footerLink: {
       color: themeColors.primary,
@@ -472,9 +552,7 @@ const createStyles = (themeColors: any) =>
       fontFamily: typography.body,
       fontSize: 14,
     },
-    formCard: {
-      gap: spacing.md,
-    },
+    formCard: { gap: spacing.md },
     formSubtitle: {
       color: themeColors.textMuted,
       fontFamily: typography.body,
@@ -493,9 +571,7 @@ const createStyles = (themeColors: any) =>
       letterSpacing: -0.9,
       lineHeight: 40,
     },
-    hero: {
-      gap: spacing.md,
-    },
+    hero: { gap: spacing.md },
     input: {
       color: themeColors.text,
       flex: 1,
@@ -513,10 +589,7 @@ const createStyles = (themeColors: any) =>
       minHeight: 56,
       paddingHorizontal: spacing.md,
     },
-    safeArea: {
-      backgroundColor: themeColors.background,
-      flex: 1,
-    },
+    safeArea: { backgroundColor: themeColors.background, flex: 1 },
     scrollRoot: {
       backgroundColor: themeColors.background,
       flexGrow: 1,
@@ -524,39 +597,13 @@ const createStyles = (themeColors: any) =>
       justifyContent: "center",
       padding: spacing.xl,
     },
-    socialButton: {
-      alignItems: "center",
-      backgroundColor: themeColors.surfaceMuted,
-      borderColor: themeColors.border,
-      borderRadius: radius.md,
-      borderWidth: 1,
-      flexDirection: "row",
-      gap: spacing.sm,
-      minHeight: 56,
-      paddingHorizontal: spacing.md,
-    },
-    socialIcon: {
-      alignItems: "center",
-      backgroundColor: themeColors.surfaceRaised,
-      borderRadius: radius.pill,
-      height: 34,
-      justifyContent: "center",
-      width: 34,
-    },
-    socialLabel: {
-      color: themeColors.text,
-      fontFamily: typography.bodyBold,
-      fontSize: 15,
-    },
     subheadline: {
       color: themeColors.textMuted,
       fontFamily: typography.body,
       fontSize: 16,
       lineHeight: 25,
     },
-    textLink: {
-      alignSelf: "flex-end",
-    },
+    textLink: { alignSelf: "flex-end" },
     textLinkLabel: {
       color: themeColors.primary,
       fontFamily: typography.bodyBold,
@@ -600,7 +647,5 @@ const createStyles = (themeColors: any) =>
       lineHeight: 24,
       marginBottom: spacing.xl,
     },
-    overlayActions: {
-      width: "100%",
-    },
+    overlayActions: { width: "100%" },
   });
