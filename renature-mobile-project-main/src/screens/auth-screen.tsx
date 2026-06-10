@@ -6,6 +6,8 @@ import {
   Lock,
   Mail,
   UserRound,
+  CheckCircle,
+  AlertTriangle,
 } from "lucide-react-native";
 import {
   Pressable,
@@ -14,7 +16,6 @@ import {
   Text,
   TextInput,
   View,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -37,6 +38,14 @@ type AuthScreenProps = {
   onNavigate: (screen: ScreenId) => void;
 };
 
+type FeedbackState = {
+  visible: boolean;
+  type: "success" | "error" | "warning";
+  title: string;
+  message: string;
+  action?: () => void;
+};
+
 export function AuthScreen({ onNavigate }: AuthScreenProps) {
   const { activeColors } = useTheme();
   const styles = createStyles(activeColors);
@@ -46,7 +55,13 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+
+  const [feedback, setFeedback] = useState<FeedbackState>({
+    visible: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId:
@@ -64,10 +79,20 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
     try {
       setIsLoading(true);
       const data = await authService.googleLogin(idToken);
-      Alert.alert("Sucesso!", `Bem-vindo pelo Google, ${data.user.name}!`);
-      onNavigate("home");
+      setFeedback({
+        visible: true,
+        type: "success",
+        title: "Sucesso!",
+        message: `Bem-vindo pelo Google, ${data.user.name}!`,
+        action: () => onNavigate("home"),
+      });
     } catch (error: any) {
-      Alert.alert("Erro no Google", error.message);
+      setFeedback({
+        visible: true,
+        type: "error",
+        title: "Erro no Google",
+        message: error.message || "Não foi possível conectar com o Google.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -75,16 +100,31 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Atenção", "Por favor, preencha o email e a senha.");
+      setFeedback({
+        visible: true,
+        type: "warning",
+        title: "Atenção",
+        message: "Por favor, preencha o email e a senha.",
+      });
       return;
     }
     try {
       setIsLoading(true);
       const data = await authService.login(email.trim(), password);
-      Alert.alert("Sucesso!", `Bem-vindo de volta, ${data.user.name}!`);
-      onNavigate("home");
+      setFeedback({
+        visible: true,
+        type: "success",
+        title: "Sucesso!",
+        message: `Bem-vindo, ${data.user.name}!`,
+        action: () => onNavigate("home"),
+      });
     } catch (error: any) {
-      Alert.alert("Erro no Login", error.message);
+      setFeedback({
+        visible: true,
+        type: "error",
+        title: "Erro no Login",
+        message: error.message || "Credenciais inválidas.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -92,25 +132,36 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
-      Alert.alert("Atenção", "Por favor, preencha todos os campos.");
+      setFeedback({
+        visible: true,
+        type: "warning",
+        title: "Atenção",
+        message: "Por favor, preencha todos os campos.",
+      });
       return;
     }
     try {
       setIsLoading(true);
       await authService.register(name.trim(), email.trim(), password);
 
-      setName("");
-      setPassword("");
-      setIsLoginMode(true);
-      setSuccessMessage(
-        "Conta criada com sucesso! Digite a senha para entrar.",
-      );
-      setTimeout(() => setSuccessMessage(""), 5000);
+      setFeedback({
+        visible: true,
+        type: "success",
+        title: "Conta criada!",
+        message: "Conta criada com sucesso! Você já pode entrar com sua senha.",
+        action: () => {
+          setName("");
+          setPassword("");
+          setIsLoginMode(true);
+        },
+      });
     } catch (error: any) {
-      Alert.alert(
-        "Erro no Cadastro",
-        error.message || "Não foi possível criar a conta.",
-      );
+      setFeedback({
+        visible: true,
+        type: "error",
+        title: "Erro no Cadastro",
+        message: error.message || "Não foi possível criar a conta.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +180,27 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
     setName("");
     setEmail("");
     setPassword("");
-    setSuccessMessage("");
+  };
+
+  const closeFeedback = () => {
+    const actionToRun = feedback.action;
+    setFeedback({ ...feedback, visible: false, action: undefined });
+    if (actionToRun) {
+      actionToRun();
+    }
+  };
+
+  const renderFeedbackIcon = () => {
+    switch (feedback.type) {
+      case "success":
+        return (
+          <CheckCircle color={activeColors.primary} size={54} strokeWidth={2} />
+        );
+      case "warning":
+        return <AlertTriangle color="#F59E0B" size={54} strokeWidth={2} />;
+      case "error":
+        return <AlertTriangle color="#EF4444" size={54} strokeWidth={2} />;
+    }
   };
 
   return (
@@ -182,7 +253,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
             <StatPill label={stitchConfig.projectTitle} tone="secondary" />
 
             <Text style={styles.formTitle}>
-              {isLoginMode ? "Bem-vindo de volta" : "Crie sua conta"}
+              {isLoginMode ? "Bem-vindo" : "Crie sua conta"}
             </Text>
             <Text style={styles.formSubtitle}>
               {isLoginMode
@@ -296,6 +367,20 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
           </SurfaceCard>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {feedback.visible && (
+        <View style={styles.overlayContainer}>
+          <View style={styles.overlayCard}>
+            <View style={styles.overlayIconWrap}>{renderFeedbackIcon()}</View>
+            <Text style={styles.overlayTitle}>{feedback.title}</Text>
+            <Text style={styles.overlayMessage}>{feedback.message}</Text>
+
+            <View style={styles.overlayActions}>
+              <AppButton label="Continuar" onPress={closeFeedback} />
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -464,5 +549,46 @@ const createStyles = (themeColors: any) =>
       color: themeColors.primary,
       fontFamily: typography.bodyBold,
       fontSize: 14,
+    },
+    overlayContainer: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(0,0,0,0.85)",
+      zIndex: 999,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: spacing.xl,
+    },
+    overlayCard: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderRadius: radius.xl,
+      padding: spacing.xl,
+      width: "100%",
+      alignItems: "center",
+      borderColor: themeColors.border,
+      borderWidth: 1,
+    },
+    overlayIconWrap: {
+      marginBottom: spacing.md,
+      backgroundColor: themeColors.background,
+      padding: spacing.md,
+      borderRadius: radius.pill,
+    },
+    overlayTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headlineStrong,
+      fontSize: 24,
+      textAlign: "center",
+      marginBottom: spacing.xs,
+    },
+    overlayMessage: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 16,
+      textAlign: "center",
+      lineHeight: 24,
+      marginBottom: spacing.xl,
+    },
+    overlayActions: {
+      width: "100%",
     },
   });

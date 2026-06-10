@@ -1,7 +1,7 @@
 import {
   ChevronRight,
   Recycle,
-  Settings,
+  LogOut,
   UserRound,
   Leaf,
   Lock,
@@ -159,13 +159,16 @@ export function ProfileScreen({
             </Text>
           </View>
           <View style={styles.topBarRight}>
-            <View style={styles.iconButton}>
-              <Settings
+            <Pressable
+              style={styles.iconButton}
+              onPress={() => onNavigate("auth")}
+            >
+              <LogOut
                 color={activeColors.textSoft}
                 size={18}
                 strokeWidth={2.2}
               />
-            </View>
+            </Pressable>
           </View>
         </View>
 

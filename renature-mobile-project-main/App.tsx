@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   Literata_700Bold,
@@ -12,7 +12,9 @@ import {
   NunitoSans_800ExtraBold,
   useFonts as useNunitoFonts,
 } from "@expo-google-fonts/nunito-sans";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 
 import { AuthScreen } from "./src/screens/auth-screen";
 import { AchievementsScreen } from "./src/screens/achievements-screen";
@@ -32,8 +34,10 @@ import { ThemeProvider } from "./src/theme/ThemeContext";
 import { FavoritesProvider } from "./src/context/FavoritesContext";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>("onboarding-1");
+  const [currentScreen, setCurrentScreen] = useState<ScreenId | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string>("plastico");
+
+  const [isAppReady, setIsAppReady] = useState(false);
 
   const [literataLoaded] = useLiterataFonts({
     Literata_700Bold,
@@ -46,11 +50,57 @@ export default function App() {
     NunitoSans_800ExtraBold,
   });
 
-  if (!literataLoaded || !nunitoLoaded) {
-    return <View style={styles.loadingScreen} />;
+  useEffect(() => {
+    async function loadAppConfig() {
+      try {
+        const userToken = await SecureStore.getItemAsync("token");
+
+        const hasSeenOnboarding =
+          await AsyncStorage.getItem("ja_viu_introducao");
+
+        if (userToken) {
+          setCurrentScreen("home");
+        } else if (hasSeenOnboarding === "true") {
+          setCurrentScreen("auth");
+        } else {
+          setCurrentScreen("onboarding-1");
+        }
+      } catch (error) {
+        console.error("Erro ao ler memória do dispositivo:", error);
+        setCurrentScreen("onboarding-1");
+      } finally {
+        setIsAppReady(true);
+      }
+    }
+
+    loadAppConfig();
+  }, []);
+
+  if (!isAppReady || !literataLoaded || !nunitoLoaded || !currentScreen) {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
-  const navigate = (screen: ScreenId) => {
+  const navigate = async (screen: ScreenId) => {
+    if (screen === "auth" && currentScreen?.startsWith("onboarding")) {
+      try {
+        await AsyncStorage.setItem("ja_viu_introducao", "true");
+      } catch (e) {
+        console.error("Erro ao salvar flag de introdução:", e);
+      }
+    }
+
+    if (screen === "auth" && !currentScreen?.startsWith("onboarding")) {
+      try {
+        await SecureStore.deleteItemAsync("token");
+      } catch (e) {
+        console.error("Erro ao deletar o token no logout:", e);
+      }
+    }
+
     setCurrentScreen(screen);
   };
 
@@ -145,5 +195,7 @@ const styles = StyleSheet.create({
   loadingScreen: {
     backgroundColor: colors.background,
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

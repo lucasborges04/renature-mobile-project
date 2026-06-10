@@ -1,4 +1,10 @@
-import { ArrowLeft, Mail, UserRound } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Mail,
+  UserRound,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react-native";
 import {
   Pressable,
   StyleSheet,
@@ -6,9 +12,9 @@ import {
   TextInput,
   View,
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import { useEffect, useState } from "react";
 
@@ -24,6 +30,14 @@ type EditProfileScreenProps = {
   onNavigate: (screen: ScreenId) => void;
 };
 
+type FeedbackState = {
+  visible: boolean;
+  type: "success" | "error" | "warning";
+  title: string;
+  message: string;
+  action?: () => void;
+};
+
 export function EditProfileScreen({
   currentScreen,
   onNavigate,
@@ -32,6 +46,13 @@ export function EditProfileScreen({
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [feedback, setFeedback] = useState<FeedbackState>({
+    visible: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
 
   const { activeColors } = useTheme();
   const styles = createStyles(activeColors);
@@ -52,30 +73,61 @@ export function EditProfileScreen({
   }, []);
 
   const handleSave = async () => {
-    if (!name.trim() || !email.trim()) {
-      Alert.alert("Atenção", "O nome e o e-mail não podem ficar vazios.");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Atenção", "Por favor, digite um formato de e-mail válido.");
+    if (!name.trim()) {
+      setFeedback({
+        visible: true,
+        type: "warning",
+        title: "Atenção",
+        message: "O nome não pode ficar vazio.",
+      });
       return;
     }
 
     setIsSaving(true);
     try {
       await api.put("/users/profile", { name, email });
-      Alert.alert("Sucesso!", "Seus dados foram atualizados com sucesso.", [
-        { text: "OK", onPress: () => onNavigate("profile") },
-      ]);
+
+      setFeedback({
+        visible: true,
+        type: "success",
+        title: "Sucesso!",
+        message: "Seus dados foram atualizados com sucesso.",
+        action: () => onNavigate("profile"),
+      });
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message ||
         "Ocorreu um erro ao atualizar o perfil.";
-      Alert.alert("Ops!", errorMessage);
+
+      setFeedback({
+        visible: true,
+        type: "error",
+        title: "Ops!",
+        message: errorMessage,
+      });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const closeFeedback = () => {
+    const actionToRun = feedback.action;
+    setFeedback({ ...feedback, visible: false, action: undefined });
+    if (actionToRun) {
+      actionToRun();
+    }
+  };
+
+  const renderFeedbackIcon = () => {
+    switch (feedback.type) {
+      case "success":
+        return (
+          <CheckCircle color={activeColors.primary} size={54} strokeWidth={2} />
+        );
+      case "warning":
+        return <AlertTriangle color="#F59E0B" size={54} strokeWidth={2} />;
+      case "error":
+        return <AlertTriangle color="#EF4444" size={54} strokeWidth={2} />;
     }
   };
 
@@ -123,16 +175,16 @@ export function EditProfileScreen({
 
             <SurfaceCard style={styles.inputCard}>
               <Text style={styles.inputLabel}>Seu e-mail de acesso</Text>
-              <View style={styles.inputRow}>
+              <View style={[styles.inputRow, styles.disabledInputRow]}>
                 <Mail
-                  color={activeColors.textSoft}
+                  color={activeColors.textMuted}
                   size={20}
                   strokeWidth={2.2}
                 />
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { color: activeColors.textMuted }]}
                   value={email}
-                  onChangeText={setEmail}
+                  editable={false} // Trava a digitação
                   placeholder="email@exemplo.com"
                   placeholderTextColor={activeColors.textSoft}
                   keyboardType="email-address"
@@ -151,6 +203,25 @@ export function EditProfileScreen({
           </View>
         )}
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={feedback.visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeFeedback}
+      >
+        <View style={styles.overlayContainer}>
+          <View style={styles.overlayCard}>
+            <View style={styles.overlayIconWrap}>{renderFeedbackIcon()}</View>
+            <Text style={styles.overlayTitle}>{feedback.title}</Text>
+            <Text style={styles.overlayMessage}>{feedback.message}</Text>
+
+            <View style={styles.overlayActions}>
+              <AppButton label="Continuar" onPress={closeFeedback} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </AppScreen>
   );
 }
@@ -209,11 +280,56 @@ const createStyles = (themeColors: any) =>
       paddingHorizontal: spacing.md,
       height: 50,
     },
+    disabledInputRow: {
+      backgroundColor: themeColors.surfaceMuted,
+      borderColor: "transparent",
+      opacity: 0.8,
+    },
     textInput: {
       color: themeColors.text,
       flex: 1,
       fontFamily: typography.bodySemiBold,
       fontSize: 16,
       height: "100%",
+    },
+    overlayContainer: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.85)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: spacing.xl,
+    },
+    overlayCard: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderRadius: radius.xl,
+      padding: spacing.xl,
+      width: "100%",
+      alignItems: "center",
+      borderColor: themeColors.border,
+      borderWidth: 1,
+    },
+    overlayIconWrap: {
+      marginBottom: spacing.md,
+      backgroundColor: themeColors.background,
+      padding: spacing.md,
+      borderRadius: radius.pill,
+    },
+    overlayTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headlineStrong,
+      fontSize: 24,
+      textAlign: "center",
+      marginBottom: spacing.xs,
+    },
+    overlayMessage: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 16,
+      textAlign: "center",
+      lineHeight: 24,
+      marginBottom: spacing.xl,
+    },
+    overlayActions: {
+      width: "100%",
     },
   });

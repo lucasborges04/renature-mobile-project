@@ -4,15 +4,6 @@ const achievementService = require("../services/achievementService");
 const axios = require("axios");
 const labelToCategoryMap = require("../data/materialMapping");
 
-const barcodeDB = {
-  7897322709376: { itemType: "Plástico", description: "Produto Teste Scanner" },
-  7894900011517: {
-    itemType: "Metal",
-    description: "Lata de Refrigerante 350ml",
-  },
-  7891010902105: { itemType: "Plástico", description: "Garrafa de Água 500ml" },
-};
-
 const actionController = {
   async registerScan(req, res) {
     try {
@@ -110,15 +101,50 @@ const actionController = {
           .json({ message: "O código de barras é obrigatório." });
       }
 
-      const product = barcodeDB[barcode];
+      const apiResponse = await axios.get(
+        `https://br.openfoodfacts.org/api/v0/product/${barcode}.json`,
+      );
 
-      if (!product) {
-        return res
-          .status(404)
-          .json({ message: "Produto não encontrado em nossa base de dados." });
+      if (apiResponse.data.status !== 1) {
+        return res.status(404).json({
+          message:
+            "Produto não encontrado nas bases globais. Tente registrar por imagem ou manualmente.",
+        });
       }
 
-      const { itemType, description } = product;
+      const productInfo = apiResponse.data.product;
+      const productName = productInfo.product_name || "Produto Genérico";
+      const packaging = (productInfo.packaging || "").toLowerCase();
+
+      const description = `${productName}`;
+
+      let itemType = "Plástico";
+      const searchString = `${packaging} ${productName.toLowerCase()}`;
+
+      if (
+        searchString.includes("lata") ||
+        searchString.includes("metal") ||
+        searchString.includes("alumínio")
+      ) {
+        itemType = "Metal";
+      } else if (
+        searchString.includes("vidro") ||
+        searchString.includes("glass")
+      ) {
+        itemType = "Vidro";
+      } else if (
+        searchString.includes("papel") ||
+        searchString.includes("caixa") ||
+        searchString.includes("cartão") ||
+        searchString.includes("tetrapak")
+      ) {
+        itemType = "Papel";
+      } else if (
+        searchString.includes("eletrônico") ||
+        searchString.includes("pilha")
+      ) {
+        itemType = "Eletrônico";
+      }
 
       let pointsEarned = 0;
       switch (itemType) {
@@ -184,12 +210,16 @@ const actionController = {
           points: user.points,
           level: user.level,
         },
+        material: itemType,
       });
     } catch (error) {
-      console.error("Erro ao processar código de barras:", error);
+      console.error("Erro ao processar código de barras externo:", error);
       res
         .status(500)
-        .json({ message: "Erro interno ao processar o código de barras." });
+        .json({
+          message:
+            "Erro interno ao consultar o código de barras na base global.",
+        });
     }
   },
 
@@ -207,11 +237,9 @@ const actionController = {
 
       const hfApiKey = process.env.HUGGINGFACE_API_KEY;
       if (!hfApiKey) {
-        return res
-          .status(500)
-          .json({
-            message: "Chave do Hugging Face não configurada no servidor.",
-          });
+        return res.status(500).json({
+          message: "Chave do Hugging Face não configurada no servidor.",
+        });
       }
 
       const imageBuffer = Buffer.from(imageBase64, "base64");
@@ -333,11 +361,9 @@ const actionController = {
         });
       }
 
-      res
-        .status(500)
-        .json({
-          message: "Erro interno ao conectar com a Inteligência Artificial.",
-        });
+      res.status(500).json({
+        message: "Erro interno ao conectar com a Inteligência Artificial.",
+      });
     }
   },
 

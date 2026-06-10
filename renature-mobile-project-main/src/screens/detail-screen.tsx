@@ -4,6 +4,7 @@ import {
   Bookmark,
   Share2,
   CheckCircle2,
+  Trophy,
 } from "lucide-react-native";
 import {
   Pressable,
@@ -11,8 +12,9 @@ import {
   Text,
   View,
   ScrollView,
-  Alert,
+  Modal,
 } from "react-native";
+import { useState, useEffect } from "react";
 
 import { AppScreen } from "../components/app-screen";
 import {
@@ -26,12 +28,17 @@ import type { ScreenId } from "../types/navigation";
 import { useFavorites } from "../context/FavoritesContext";
 import { useTheme } from "../theme/ThemeContext";
 import { userService } from "../services/userService";
-import { useEffect } from "react";
 
 type DetailScreenProps = {
   currentScreen: ScreenId;
   onNavigate: (screen: ScreenId) => void;
   guideId?: string;
+};
+
+type AchievementState = {
+  visible: boolean;
+  title: string;
+  message: string;
 };
 
 export function DetailScreen({
@@ -44,6 +51,12 @@ export function DetailScreen({
   const { toggleFavorite, isFavorite } = useFavorites();
   const isFav = isFavorite(guideId);
 
+  const [achievement, setAchievement] = useState<AchievementState>({
+    visible: false,
+    title: "",
+    message: "",
+  });
+
   const guide =
     recyclingGuides[guideId as keyof typeof recyclingGuides] ||
     recyclingGuides.plastico;
@@ -54,16 +67,21 @@ export function DetailScreen({
         const response = await userService.unlockAchievement("ALUNO_NATUREZA");
 
         if (response && response.newlyUnlocked) {
-          Alert.alert(
-            "Conquista Desbloqueada! 🏆",
-            "Aluno da Natureza: Você leu seu primeiro conteúdo educativo!",
-          );
+          setAchievement({
+            visible: true,
+            title: "Conquista Desbloqueada! 🏆",
+            message:
+              "Aluno da Natureza: Você leu seu primeiro conteúdo educativo!",
+          });
         }
       } catch (error) {}
     }
 
     checkReadAchievement();
   }, []);
+
+  const closeAchievement = () =>
+    setAchievement({ ...achievement, visible: false });
 
   return (
     <AppScreen currentScreen={currentScreen} onNavigate={onNavigate}>
@@ -157,6 +175,27 @@ export function DetailScreen({
           onPress={() => onNavigate("learn")}
         />
       </ScrollView>
+
+      <Modal
+        visible={achievement.visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeAchievement}
+      >
+        <View style={styles.overlayContainer}>
+          <View style={styles.overlayCard}>
+            <View style={styles.overlayIconWrap}>
+              <Trophy color="#F59E0B" size={54} strokeWidth={2} />
+            </View>
+            <Text style={styles.overlayTitle}>{achievement.title}</Text>
+            <Text style={styles.overlayMessage}>{achievement.message}</Text>
+
+            <View style={styles.overlayActions}>
+              <AppButton label="Legal!" onPress={closeAchievement} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </AppScreen>
   );
 }
@@ -274,5 +313,45 @@ const createStyles = (themeColors: any) =>
       fontFamily: typography.body,
       fontSize: 14,
       lineHeight: 21,
+    },
+    overlayContainer: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.85)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: spacing.xl,
+    },
+    overlayCard: {
+      backgroundColor: themeColors.surfaceRaised,
+      borderRadius: radius.xl,
+      padding: spacing.xl,
+      width: "100%",
+      alignItems: "center",
+      borderColor: themeColors.border,
+      borderWidth: 1,
+    },
+    overlayIconWrap: {
+      marginBottom: spacing.md,
+      backgroundColor: themeColors.background,
+      padding: spacing.md,
+      borderRadius: radius.pill,
+    },
+    overlayTitle: {
+      color: themeColors.text,
+      fontFamily: typography.headlineStrong,
+      fontSize: 24,
+      textAlign: "center",
+      marginBottom: spacing.xs,
+    },
+    overlayMessage: {
+      color: themeColors.textMuted,
+      fontFamily: typography.body,
+      fontSize: 16,
+      textAlign: "center",
+      lineHeight: 24,
+      marginBottom: spacing.xl,
+    },
+    overlayActions: {
+      width: "100%",
     },
   });
