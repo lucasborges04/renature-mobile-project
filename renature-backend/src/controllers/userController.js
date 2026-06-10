@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Achievement = require("../models/Achievement");
+const bcrypt = require("bcrypt");
 
 const userController = {
   async getProfile(req, res) {
@@ -51,6 +52,50 @@ const userController = {
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
       res.status(500).json({ message: "Erro interno no servidor." });
+    }
+  },
+
+  async changePassword(req, res) {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          message: "A senha atual e a nova senha são obrigatórias.",
+        });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({
+          message: "A nova senha deve ter pelo menos 8 caracteres.",
+        });
+      }
+
+      const user = await User.findById(req.user._id).select("+password");
+
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado." });
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res
+          .status(401)
+          .json({ message: "A senha atual está incorreta." });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      await User.updateOne(
+        { _id: req.user._id },
+        { $set: { password: hashedPassword } },
+      );
+
+      res.status(200).json({ message: "Senha atualizada com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao trocar senha:", error);
+      res.status(500).json({ message: "Erro interno ao atualizar a senha." });
     }
   },
 

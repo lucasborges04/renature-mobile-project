@@ -8,6 +8,8 @@ import {
   UserRound,
   CheckCircle,
   AlertTriangle,
+  Eye,
+  EyeOff,
 } from "lucide-react-native";
 import {
   Pressable,
@@ -55,6 +57,8 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [feedback, setFeedback] = useState<FeedbackState>({
     visible: false,
@@ -115,7 +119,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
         visible: true,
         type: "success",
         title: "Sucesso!",
-        message: `Bem-vindo, ${data.user.name}!`,
+        message: `Bem-vindo de volta, ${data.user.name}!`,
         action: () => onNavigate("home"),
       });
     } catch (error: any) {
@@ -153,6 +157,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
           setName("");
           setPassword("");
           setIsLoginMode(true);
+          setShowPassword(false);
         },
       });
     } catch (error: any) {
@@ -180,6 +185,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
     setName("");
     setEmail("");
     setPassword("");
+    setShowPassword(false);
   };
 
   const closeFeedback = () => {
@@ -214,7 +220,6 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* Bolhas de fundo */}
           <View style={styles.bgBlobTop} />
           <View style={styles.bgBlobBottom} />
 
@@ -253,7 +258,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
             <StatPill label={stitchConfig.projectTitle} tone="secondary" />
 
             <Text style={styles.formTitle}>
-              {isLoginMode ? "Bem-vindo" : "Crie sua conta"}
+              {isLoginMode ? "Bem-vindo de volta" : "Crie sua conta"}
             </Text>
             <Text style={styles.formSubtitle}>
               {isLoginMode
@@ -313,11 +318,18 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
                 <TextInput
                   placeholder="••••••••"
                   placeholderTextColor={activeColors.textSoft}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   style={styles.input}
                   value={password}
                   onChangeText={setPassword}
                 />
+                <Pressable onPress={() => setShowPassword(!showPassword)}>
+                  {showPassword ? (
+                    <EyeOff color={activeColors.textSoft} size={18} />
+                  ) : (
+                    <Eye color={activeColors.textSoft} size={18} />
+                  )}
+                </Pressable>
               </View>
             </View>
 
