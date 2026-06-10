@@ -43,6 +43,7 @@ export function EditProfileScreen({
   onNavigate,
 }: EditProfileScreenProps) {
   const [name, setName] = useState("");
+  const [originalName, setOriginalName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -62,6 +63,7 @@ export function EditProfileScreen({
       try {
         const response = await api.get("/users/profile");
         setName(response.data.name || "");
+        setOriginalName(response.data.name || "");
         setEmail(response.data.email || "");
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -73,7 +75,9 @@ export function EditProfileScreen({
   }, []);
 
   const handleSave = async () => {
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
       setFeedback({
         visible: true,
         type: "warning",
@@ -83,9 +87,21 @@ export function EditProfileScreen({
       return;
     }
 
+    if (trimmedName === originalName.trim()) {
+      setFeedback({
+        visible: true,
+        type: "warning",
+        title: "Nenhuma alteração",
+        message: "Você não modificou o seu nome atual para salvar.",
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
-      await api.put("/users/profile", { name, email });
+      await api.put("/users/profile", { name: trimmedName, email });
+
+      setOriginalName(trimmedName);
 
       setFeedback({
         visible: true,
