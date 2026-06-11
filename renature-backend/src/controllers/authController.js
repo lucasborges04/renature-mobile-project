@@ -16,6 +16,16 @@ const authController = {
         return res.status(400).json({ message: "Preencha todos os campos." });
       }
 
+      if (password.length < 8) {
+        setFeedback({
+          visible: true,
+          type: "warning",
+          title: "Senha Curta",
+          message: "A sua senha deve ter no mínimo 8 caracteres.",
+        });
+        return;
+      }
+
       const userExists = await User.findOne({ email });
       if (userExists) {
         return res.status(400).json({ message: "Este email já está em uso." });
