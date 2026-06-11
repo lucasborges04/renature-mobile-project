@@ -145,8 +145,6 @@ export function HomeScreen({ currentScreen, onNavigate }: HomeScreenProps) {
         colors={[activeColors.primary, activeColors.primaryDeep]}
         style={styles.heroCard}
       >
-        <StatPill label={getStitchStatusLabel()} tone="secondary" />
-
         {isLoading ? (
           <View style={{ paddingVertical: spacing.xl, alignItems: "center" }}>
             <ActivityIndicator size="large" color={activeColors.white} />

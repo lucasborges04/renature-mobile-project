@@ -109,6 +109,17 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
       });
       return;
     }
+
+    if (password.length < 8) {
+      setFeedback({
+        visible: true,
+        type: "warning",
+        title: "Senha Curta",
+        message: "A sua senha deve ter no mínimo 8 caracteres.",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       await authService.register(name.trim(), email.trim(), password);
@@ -306,8 +317,6 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
           </View>
 
           <SurfaceCard style={styles.formCard}>
-            <StatPill label={stitchConfig.projectTitle} tone="secondary" />
-
             <Text style={styles.formTitle}>{getFormTitle()}</Text>
             <Text style={styles.formSubtitle}>{getFormSubtitle()}</Text>
 

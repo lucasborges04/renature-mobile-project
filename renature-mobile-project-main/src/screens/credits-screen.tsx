@@ -68,11 +68,14 @@ export function CreditsScreen({
               Projeto de Extensão Fábrica de Software
             </Text>
             <Text style={styles.bodyText}>
-              A finalidade deste projeto é proporcionar aos estudantes a
-              experiência real do desenvolvimento de sistemas, integrando
-              conhecimentos teóricos em um ambiente profissional, aplicando
-              tecnologias modernas para solucionar problemas reais da
-              comunidade.
+              O Renature é uma plataforma digital focada em conscientização e
+              engajamento ambiental. Sua funcionalidade principal é o
+              rastreamento de ações sustentáveis através de um sistema
+              gamificado. O aplicativo permite que o usuário registre os itens
+              que recicla no dia a dia, acumulando pontos de experiência (XP),
+              subindo de nível e desbloqueando conquistas, transformando a
+              rotina de preservação do planeta em uma jornada interativa e
+              recompensadora.
             </Text>
           </View>
         </SurfaceCard>
