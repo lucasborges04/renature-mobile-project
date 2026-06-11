@@ -27,6 +27,7 @@ import { ProfileScreen } from "./src/screens/profile-screen";
 import { RankingScreen } from "./src/screens/ranking-screen";
 import { ScannerScreen } from "./src/screens/scanner-screen";
 import { ManualScreen } from "./src/screens/manual-screen";
+import { CreditsScreen } from "./src/screens/credits-screen";
 import { colors } from "./src/theme/tokens";
 import type { ScreenId } from "./src/types/navigation";
 import { EditProfileScreen } from "./src/screens/edit-profile-screen";
@@ -185,6 +186,10 @@ function renderScreen(
           currentScreen={currentScreen}
           onNavigate={navigate}
         />
+      );
+    case "credits":
+      return (
+        <CreditsScreen currentScreen={currentScreen} onNavigate={navigate} />
       );
     default:
       return <HomeScreen currentScreen="home" onNavigate={navigate} />;

@@ -48,20 +48,13 @@ export function ProfileScreen({
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const profileLinks = [
-    "Editar perfil",
-    "Configurações",
-    "Privacidade e permissões",
-  ];
+  const profileLinks = ["Editar perfil", "Créditos"];
 
   const handleMenuPress = (linkName: string) => {
     if (linkName === "Editar perfil") {
       onNavigate("edit-profile");
-    } else {
-      Alert.alert(
-        "Em desenvolvimento",
-        `A área de "${linkName}" estará disponível na versão final do aplicativo.`,
-      );
+    } else if (linkName === "Créditos") {
+      onNavigate("credits" as ScreenId);
     }
   };
 
