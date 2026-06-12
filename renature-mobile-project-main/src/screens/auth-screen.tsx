@@ -84,7 +84,7 @@ export function AuthScreen({ onNavigate }: AuthScreenProps) {
         visible: true,
         type: "success",
         title: "Sucesso!",
-        message: `Bem-vindo de volta, ${data.user.name}!`,
+        message: `Bem-vindo, ${data.user.name}!`,
         action: () => onNavigate("home"),
       });
     } catch (error: any) {

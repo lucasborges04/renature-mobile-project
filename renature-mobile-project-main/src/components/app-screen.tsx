@@ -16,10 +16,8 @@ export function AppScreen({
   currentScreen,
   onNavigate,
 }: AppScreenProps) {
-  // 1. Puxamos as cores ativas (Claras ou Escuras)
   const { activeColors } = useTheme();
 
-  // 2. Injetamos essas cores vivas nos nossos estilos
   const styles = createStyles(activeColors);
 
   return (
@@ -31,14 +29,12 @@ export function AppScreen({
         >
           {children}
         </ScrollView>
-        {/* A sua navegação está protegida e intacta aqui */}
         <BottomNav currentScreen={currentScreen} onNavigate={onNavigate} />
       </View>
     </SafeAreaView>
   );
 }
 
-// 3. Transformamos o objeto fixo em uma função dinâmica que recebe o "themeColors"
 const createStyles = (themeColors: any) =>
   StyleSheet.create({
     content: {
@@ -50,7 +46,6 @@ const createStyles = (themeColors: any) =>
       flex: 1,
     },
     safeArea: {
-      // 4. O fundo escuta o tema ativo em vez de uma cor estática
       backgroundColor: themeColors.background,
       flex: 1,
     },

@@ -22,6 +22,21 @@ Instale todas as dependências do servidor:
 npm install
 ```
 
+## Passo 2: Configurando o arquivo .env (MUITO IMPORTANTE)
+
+Dentro da pasta do backend (renature-backend), crie um arquivo novo chamado `.env`. No projeto tem o arquivo `.env.example` caso queira seguir por lá.
+Copie o texto abaixo e cole dentro do `.env` que você criou.
+
+```
+PORT=3000
+MONGO_URI=coloque_a_nossa_string_de_conexao_aqui
+JWT_SECRET=coloque_um_segredo_aqui_como_terra_app_secret_123
+EMAIL_USER=lucasbborges2004@gmail.com
+EMAIL_PASS=coloque_a_senha_de_aplicativo_do_gmail_aqui
+```
+
+Peça pelo WhatsApp as chaves reais para substituir no arquivo antes de rodar o servidor.
+
 ### Ligando o Servidor (Backend)
 
 Com as dependências instaladas, inicie o servidor com o seguinte comando:
@@ -38,21 +53,6 @@ Servidor rodando perfeitamente na porta 3000
 Teste a API acessando: http://localhost:3000/api/status"
 
 Deixe esse terminal aberto e rodando.
-
-## Passo 2: Configurando o arquivo .env (MUITO IMPORTANTE)
-
-Dentro da pasta do backend (renature-backend), crie um arquivo novo chamado `.env`. No projeto tem o arquivo `.env.example` caso queira seguir por lá.
-Copie o texto abaixo e cole dentro do `.env` que você criou.
-
-```
-PORT=3000
-MONGO_URI=coloque_a_nossa_string_de_conexao_aqui
-JWT_SECRET=coloque_um_segredo_aqui_como_terra_app_secret_123
-EMAIL_USER=lucasbborges2004@gmail.com
-EMAIL_PASS=coloque_a_senha_de_aplicativo_do_gmail_aqui
-```
-
-Peça pelo WhatsApp as chaves reais para substituir no arquivo antes de rodar o servidor.
 
 ## Passo 3: Configurando o Frontend
 

@@ -10,6 +10,15 @@ const userController = {
         .select("-password")
         .populate("unlockedAchievements");
 
+      if (!user) {
+        return res
+          .status(404)
+          .json({
+            message:
+              "Usuário não encontrado no banco de dados. Faça login novamente.",
+          });
+      }
+
       if (user) {
         res.json(user);
       } else {
@@ -111,11 +120,9 @@ const userController = {
       const user = await User.findOne({ email: email.toLowerCase().trim() });
 
       if (!user) {
-        return res
-          .status(200)
-          .json({
-            message: "Se o e-mail existir no sistema, um código foi enviado.",
-          });
+        return res.status(200).json({
+          message: "Se o e-mail existir no sistema, um código foi enviado.",
+        });
       }
 
       const pinCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -144,11 +151,9 @@ const userController = {
         user.resetPasswordExpire = undefined;
         await user.save();
 
-        return res
-          .status(500)
-          .json({
-            message: "Não foi possível enviar o e-mail de recuperação.",
-          });
+        return res.status(500).json({
+          message: "Não foi possível enviar o e-mail de recuperação.",
+        });
       }
     } catch (error) {
       console.error("Erro no forgotPassword:", error);
@@ -197,11 +202,9 @@ const userController = {
         },
       );
 
-      res
-        .status(200)
-        .json({
-          message: "Senha redefinida com sucesso! Você já pode fazer login.",
-        });
+      res.status(200).json({
+        message: "Senha redefinida com sucesso! Você já pode fazer login.",
+      });
     } catch (error) {
       console.error("Erro no resetPassword:", error);
       res.status(500).json({ message: "Erro interno ao redefinir a senha." });
