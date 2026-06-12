@@ -46,6 +46,7 @@ const screenToTab: Record<ScreenId, MainTab | null> = {
   scanner: "scanner",
   manual: null,
   "edit-profile": null,
+  credits: null,
 };
 
 export function BottomNav({ currentScreen, onNavigate }: BottomNavProps) {

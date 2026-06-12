@@ -31,7 +31,6 @@ type ScannerScreenProps = {
   onNavigate: (screen: ScreenId) => void;
 };
 
-// Nosso controlador de estado para o Feedback Visual
 type FeedbackState = {
   visible: boolean;
   type: "success" | "error" | "levelup";
@@ -51,7 +50,6 @@ export function ScannerScreen({
   const [scanned, setScanned] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Substituímos o scanResult antigo pelo nosso Feedback Visual
   const [feedback, setFeedback] = useState<FeedbackState>({
     visible: false,
     type: "success",
@@ -140,8 +138,6 @@ export function ScannerScreen({
 
   const closeFeedback = () => {
     setFeedback({ ...feedback, visible: false });
-    // Se for erro, libera a câmera para tentar outro código.
-    // Se for sucesso, o usuário deve voltar para a Home ou apertar o botão manual.
     if (feedback.type === "error") {
       setScanned(false);
     }
@@ -236,7 +232,6 @@ export function ScannerScreen({
         onPress={() => onNavigate("manual")}
       />
 
-      {/* --- O NOSSO NOVO OVERLAY DE FEEDBACK (SUBSTITUTO DO POP-UP) --- */}
       {feedback.visible && (
         <View style={styles.overlayContainer}>
           <View style={styles.overlayCard}>

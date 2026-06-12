@@ -9,6 +9,4 @@ router.post("/barcode", protect, actionController.registerBarcodeScan);
 
 router.get("/history", protect, actionController.getHistory);
 
-router.post("/image", protect, actionController.registerImageScan);
-
 module.exports = router;
