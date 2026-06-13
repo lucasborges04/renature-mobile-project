@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const Achievement = require("../models/Achievement");
-const sendEmail = require("../services/sendEmail");
+const { sendEmail } = require("../services/sendEmail");
 const bcrypt = require("bcrypt");
 
 const userController = {
@@ -146,7 +146,12 @@ const userController = {
           .status(200)
           .json({ message: "Código de recuperação enviado para o e-mail." });
       } catch (emailError) {
-        console.error("Erro ao enviar e-mail:", emailError);
+        console.error("Erro ao enviar e-mail:", {
+          code: emailError.code,
+          command: emailError.command,
+          response: emailError.response,
+          message: emailError.message,
+        });
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save();

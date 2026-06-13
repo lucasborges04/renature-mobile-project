@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 const app = require("./src/app");
+const { verifyEmailTransport } = require("./src/services/sendEmail");
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
@@ -26,6 +27,17 @@ mongoose
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Servidor rodando perfeitamente na porta ${PORT}`);
       console.log(`Health check disponivel em /api/status`);
+
+      verifyEmailTransport()
+        .then(() => console.log("Conexao SMTP com o Gmail validada."))
+        .catch((error) => {
+          console.error("Falha ao validar SMTP com o Gmail:", {
+            code: error.code,
+            command: error.command,
+            response: error.response,
+            message: error.message,
+          });
+        });
     });
   })
   .catch((error) => {
