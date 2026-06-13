@@ -6,6 +6,16 @@ const app = require("./src/app");
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
+if (!MONGO_URI) {
+  console.error("A variavel de ambiente MONGO_URI nao foi configurada.");
+  process.exit(1);
+}
+
+if (!process.env.JWT_SECRET) {
+  console.error("A variavel de ambiente JWT_SECRET nao foi configurada.");
+  process.exit(1);
+}
+
 console.log("Tentando conectar ao MongoDB Atlas...");
 
 mongoose
@@ -13,9 +23,9 @@ mongoose
   .then(() => {
     console.log("Conectado ao MongoDB Atlas com sucesso!");
 
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`Servidor rodando perfeitamente na porta ${PORT}`);
-      console.log(`Teste a API acessando: http://localhost:${PORT}/api/status`);
+      console.log(`Health check disponivel em /api/status`);
     });
   })
   .catch((error) => {

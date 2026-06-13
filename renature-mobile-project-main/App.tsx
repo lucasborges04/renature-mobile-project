@@ -33,6 +33,7 @@ import type { ScreenId } from "./src/types/navigation";
 import { EditProfileScreen } from "./src/screens/edit-profile-screen";
 import { ThemeProvider } from "./src/theme/ThemeContext";
 import { FavoritesProvider } from "./src/context/FavoritesContext";
+import { api } from "./src/services/api";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId | null>(null);
@@ -60,7 +61,18 @@ export default function App() {
           await AsyncStorage.getItem("ja_viu_introducao");
 
         if (userToken) {
-          setCurrentScreen("home");
+          try {
+            await api.get("/users/profile");
+            setCurrentScreen("home");
+          } catch (error: any) {
+            if (
+              error.response?.status === 401 ||
+              error.response?.status === 404
+            ) {
+              await SecureStore.deleteItemAsync("token");
+            }
+            setCurrentScreen("auth");
+          }
         } else if (hasSeenOnboarding === "true") {
           setCurrentScreen("auth");
         } else {
