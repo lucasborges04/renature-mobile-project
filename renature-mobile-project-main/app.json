@@ -20,6 +20,11 @@
       "hidden": true
     },
     "android": {
+      "package": "br.edu.unisagrado.renature",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -30,6 +35,16 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-font", "expo-web-browser", "expo-secure-store"]
+    "plugins": [
+      "expo-font",
+      "expo-web-browser",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "44acb593-0a92-487c-b719-e053e482ea86"
+      }
+    },
+    "owner": "alisson98sb"
   }
 }

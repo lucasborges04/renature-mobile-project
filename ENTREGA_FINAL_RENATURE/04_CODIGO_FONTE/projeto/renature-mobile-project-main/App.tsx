@@ -1,0 +1,218 @@
+import { useState, useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import {
+  Literata_700Bold,
+  Literata_800ExtraBold,
+  useFonts as useLiterataFonts,
+} from "@expo-google-fonts/literata";
+import {
+  NunitoSans_400Regular,
+  NunitoSans_600SemiBold,
+  NunitoSans_700Bold,
+  NunitoSans_800ExtraBold,
+  useFonts as useNunitoFonts,
+} from "@expo-google-fonts/nunito-sans";
+import { StyleSheet, View, ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
+
+import { AuthScreen } from "./src/screens/auth-screen";
+import { AchievementsScreen } from "./src/screens/achievements-screen";
+import { ChallengesScreen } from "./src/screens/challenges-screen";
+import { DetailScreen } from "./src/screens/detail-screen";
+import { HomeScreen } from "./src/screens/home-screen";
+import { LearnScreen } from "./src/screens/learn-screen";
+import { OnboardingScreen } from "./src/screens/onboarding-screen";
+import { ProfileScreen } from "./src/screens/profile-screen";
+import { RankingScreen } from "./src/screens/ranking-screen";
+import { ScannerScreen } from "./src/screens/scanner-screen";
+import { ManualScreen } from "./src/screens/manual-screen";
+import { CreditsScreen } from "./src/screens/credits-screen";
+import { colors } from "./src/theme/tokens";
+import type { ScreenId } from "./src/types/navigation";
+import { EditProfileScreen } from "./src/screens/edit-profile-screen";
+import { ThemeProvider } from "./src/theme/ThemeContext";
+import { FavoritesProvider } from "./src/context/FavoritesContext";
+import { api } from "./src/services/api";
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState<ScreenId | null>(null);
+  const [selectedGuideId, setSelectedGuideId] = useState<string>("plastico");
+
+  const [isAppReady, setIsAppReady] = useState(false);
+
+  const [literataLoaded] = useLiterataFonts({
+    Literata_700Bold,
+    Literata_800ExtraBold,
+  });
+  const [nunitoLoaded] = useNunitoFonts({
+    NunitoSans_400Regular,
+    NunitoSans_600SemiBold,
+    NunitoSans_700Bold,
+    NunitoSans_800ExtraBold,
+  });
+
+  useEffect(() => {
+    async function loadAppConfig() {
+      try {
+        const userToken = await SecureStore.getItemAsync("token");
+
+        const hasSeenOnboarding =
+          await AsyncStorage.getItem("ja_viu_introducao");
+
+        if (userToken) {
+          try {
+            await api.get("/users/profile");
+            setCurrentScreen("home");
+          } catch (error: any) {
+            if (
+              error.response?.status === 401 ||
+              error.response?.status === 404
+            ) {
+              await SecureStore.deleteItemAsync("token");
+            }
+            setCurrentScreen("auth");
+          }
+        } else if (hasSeenOnboarding === "true") {
+          setCurrentScreen("auth");
+        } else {
+          setCurrentScreen("onboarding-1");
+        }
+      } catch (error) {
+        console.error("Erro ao ler memória do dispositivo:", error);
+        setCurrentScreen("onboarding-1");
+      } finally {
+        setIsAppReady(true);
+      }
+    }
+
+    loadAppConfig();
+  }, []);
+
+  if (!isAppReady || !literataLoaded || !nunitoLoaded || !currentScreen) {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  const navigate = async (screen: ScreenId) => {
+    if (screen === "auth" && currentScreen?.startsWith("onboarding")) {
+      try {
+        await AsyncStorage.setItem("ja_viu_introducao", "true");
+      } catch (e) {
+        console.error("Erro ao salvar flag de introdução:", e);
+      }
+    }
+
+    if (screen === "auth" && !currentScreen?.startsWith("onboarding")) {
+      try {
+        await SecureStore.deleteItemAsync("token");
+      } catch (e) {
+        console.error("Erro ao deletar o token no logout:", e);
+      }
+    }
+
+    setCurrentScreen(screen);
+  };
+
+  return (
+    <ThemeProvider>
+      <FavoritesProvider>
+        <StatusBar hidden />
+        {renderScreen(
+          currentScreen,
+          navigate,
+          selectedGuideId,
+          setSelectedGuideId,
+        )}
+      </FavoritesProvider>
+    </ThemeProvider>
+  );
+}
+
+function renderScreen(
+  currentScreen: ScreenId,
+  navigate: (screen: ScreenId) => void,
+  selectedGuideId: string,
+  setSelectedGuideId: (id: string) => void,
+) {
+  switch (currentScreen) {
+    case "onboarding-1":
+    case "onboarding-2":
+    case "onboarding-3":
+      return (
+        <OnboardingScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    case "auth":
+      return <AuthScreen onNavigate={navigate} />;
+    case "home":
+      return <HomeScreen currentScreen={currentScreen} onNavigate={navigate} />;
+    case "learn":
+      return (
+        <LearnScreen
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+          onSelectGuide={setSelectedGuideId}
+        />
+      );
+    case "detail":
+      return (
+        <DetailScreen
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+          guideId={selectedGuideId}
+        />
+      );
+    case "scanner":
+      return (
+        <ScannerScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    case "manual":
+      return (
+        <ManualScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    case "challenges":
+      return (
+        <ChallengesScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    case "achievements":
+      return (
+        <AchievementsScreen
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+        />
+      );
+    case "ranking":
+      return (
+        <RankingScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    case "profile":
+      return (
+        <ProfileScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    case "edit-profile":
+      return (
+        <EditProfileScreen
+          currentScreen={currentScreen}
+          onNavigate={navigate}
+        />
+      );
+    case "credits":
+      return (
+        <CreditsScreen currentScreen={currentScreen} onNavigate={navigate} />
+      );
+    default:
+      return <HomeScreen currentScreen="home" onNavigate={navigate} />;
+  }
+}
+
+const styles = StyleSheet.create({
+  loadingScreen: {
+    backgroundColor: colors.background,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});

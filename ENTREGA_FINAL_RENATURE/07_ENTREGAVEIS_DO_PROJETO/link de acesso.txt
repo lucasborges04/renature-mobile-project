@@ -1,0 +1,18 @@
+Repositorio:
+https://github.com/lucasborges04/renature-mobile-project
+
+API:
+https://renature-api.onrender.com
+
+Health check da API:
+https://renature-api.onrender.com/api/status
+
+APK release:
+Pagina do build:
+https://expo.dev/accounts/alisson98sb/projects/Renature/builds/a6dfdc28-2c37-465d-8f8c-daf558c9f546
+
+Artefato APK:
+https://expo.dev/artifacts/eas/hiSa68x3DkkI3AKFHFYaGdLlPonjvhhm0mXYNOSXLy0.apk
+
+AAB release:
+PENDENTE - inserir link do artefato EAS apos a compilacao.

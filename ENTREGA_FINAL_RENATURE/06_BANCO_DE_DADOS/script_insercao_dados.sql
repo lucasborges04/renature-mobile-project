@@ -1,0 +1,3 @@
+-- NAO APLICAVEL.
+-- O projeto utiliza MongoDB Atlas, e nao um banco SQL.
+-- Consulte scripts_mongodb/inserir_conquistas.mongodb.js.

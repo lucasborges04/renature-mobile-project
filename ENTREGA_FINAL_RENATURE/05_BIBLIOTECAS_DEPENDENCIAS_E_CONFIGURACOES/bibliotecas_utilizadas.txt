@@ -1,0 +1,19 @@
+Expo/React Native: base do aplicativo mobile multiplataforma.
+React e TypeScript: interface, componentes, estado e tipagem.
+Axios: comunicacao HTTP entre aplicativo e API.
+Expo SecureStore: armazenamento seguro do token JWT.
+AsyncStorage: persistencia de preferencias locais.
+Expo Camera: acesso a camera para leitura e registro de itens.
+Expo Linear Gradient: elementos visuais em gradiente.
+Expo Font e Google Fonts: fontes Literata e Nunito Sans.
+Lucide React Native: icones da interface.
+Express: servidor HTTP e rotas REST.
+Mongoose: schemas e acesso ao MongoDB.
+jsonwebtoken: emissao e validacao de tokens de autenticacao.
+bcrypt/bcryptjs: hash e verificacao de senhas.
+cors: liberacao controlada de requisicoes entre clientes e API.
+dotenv: carregamento de configuracoes locais.
+Brevo REST API: envio HTTPS de codigos de recuperacao de senha.
+Render: hospedagem publica da API.
+MongoDB Atlas: banco de dados gerenciado.
+EAS Build: compilacao e assinatura de APK/AAB.

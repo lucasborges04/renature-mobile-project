@@ -1,0 +1,5 @@
+Nome do aplicativo: Renature
+Slug Expo: Renature
+Organization/Package name Android: br.edu.unisagrado.renature
+Versao: 1.0.0
+Version code Android: 1

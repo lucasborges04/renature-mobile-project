@@ -1,0 +1,63 @@
+RESUMO DO PROJETO
+
+O Renature App e uma solucao mobile de educacao ambiental que combina registro
+de reciclagem, conteudo educativo e gamificacao. O usuario pode criar uma conta,
+registrar itens reciclados, acompanhar pontos, niveis e conquistas, consultar
+guias de descarte e visualizar sua evolucao.
+
+DESCRICAO COMPLETA
+
+O projeto foi desenvolvido para aproximar praticas sustentaveis da rotina das
+pessoas. O aplicativo oferece cadastro e autenticacao, recuperacao de senha,
+perfil de usuario, registro manual de materiais e leitura por camera, guias
+educativos, favoritos, ranking, desafios, conquistas e acompanhamento de
+pontuacao.
+
+O backend centraliza as regras de autenticacao, usuarios, pontuacao e
+conquistas. Os dados persistentes sao armazenados no MongoDB Atlas. A API Node.js
+esta hospedada no Render e e consumida pelo aplicativo por HTTPS. Tokens JWT sao
+armazenados de forma segura no dispositivo, e codigos de recuperacao de senha
+sao enviados pela API transacional da Brevo.
+
+OBJETIVO GERAL
+
+Estimular atitudes ambientalmente responsaveis utilizando tecnologia,
+informacao e mecanismos de gamificacao.
+
+OBJETIVOS ESPECIFICOS
+
+- Facilitar o registro de materiais reciclados.
+- Ensinar formas corretas de separacao e descarte.
+- Incentivar recorrencia por pontos, niveis, desafios e conquistas.
+- Permitir que o usuario acompanhe sua evolucao.
+- Disponibilizar uma experiencia acessivel em dispositivos Android.
+- Demonstrar a aplicacao pratica de desenvolvimento mobile, APIs e banco de
+  dados em um projeto de extensao.
+
+PUBLICO-ALVO
+
+Estudantes, familias, comunidades, instituicoes de ensino e demais pessoas
+interessadas em reciclagem, sustentabilidade e educacao ambiental. O aplicativo
+foi pensado para usuarios de smartphones Android com acesso a Internet.
+
+TECNOLOGIAS UTILIZADAS
+
+Frontend mobile:
+- Expo SDK 54
+- React Native 0.81
+- React 19
+- TypeScript 5.9
+- Expo Camera, SecureStore, Font, Linear Gradient e Web Browser
+- AsyncStorage, Axios, Lucide Icons e React Native SVG
+
+Backend e infraestrutura:
+- Node.js
+- Express 5
+- MongoDB Atlas
+- Mongoose
+- JWT
+- bcrypt/bcryptjs
+- API Brevo para e-mails transacionais
+- Render para hospedagem da API
+- GitHub para versionamento
+- EAS Build para compilacao e assinatura Android

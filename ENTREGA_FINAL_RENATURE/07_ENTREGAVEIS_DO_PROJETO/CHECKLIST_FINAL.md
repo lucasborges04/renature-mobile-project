@@ -1,0 +1,25 @@
+# Checklist final mobile
+
+- [x] Nome do aplicativo coerente: Renature.
+- [x] Package nao utiliza `com.example`.
+- [x] Package configurado como `br.edu.unisagrado.renature`.
+- [x] Versao configurada como `1.0.0`.
+- [x] Version code configurado como `1`.
+- [x] Icone personalizado configurado.
+- [x] Splash personalizado configurado.
+- [x] Permissao de camera declarada.
+- [x] Tela de creditos possui integrantes e tres docentes.
+- [x] API publica utiliza HTTPS.
+- [x] Gerar APK release assinado.
+- [ ] Gerar AAB release assinado.
+- [x] Renomear o APK de forma clara.
+- [ ] Instalar APK release em dispositivo Android real.
+- [ ] Testar cadastro, login e recuperacao de senha.
+- [ ] Testar scanner e permissao de camera.
+- [ ] Testar todas as telas e navegacao.
+- [ ] Testar em Wi-Fi e dados moveis.
+- [ ] Confirmar nome, icone e versao no Android.
+- [ ] Adicionar capturas de tela finais sem mensagens de erro.
+- [x] Adicionar link EAS do APK em `link de acesso.txt`.
+- [ ] Confirmar que nenhum `.env` ou segredo foi incluido.
+- [ ] Confirmar que nenhum arquivo debug foi incluido.

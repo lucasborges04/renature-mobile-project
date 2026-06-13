@@ -1,0 +1,16 @@
+Arquivo: renature-v1.0.0-release.apk
+Tipo: APK Android release para distribuicao interna
+Package: br.edu.unisagrado.renature
+Version name: 1.0.0
+Version code: 1
+Perfil EAS: preview
+Build ID: a6dfdc28-2c37-465d-8f8c-daf558c9f546
+Status EAS: FINISHED
+Gerado em: 13/06/2026
+Tamanho: 90439500 bytes
+SHA-256: 74532FF00BF6424ABAFA06C80EFF3DFEF35B16ACE3FC4688DB07606137FF2DCF
+
+O EAS Build criou e utilizou uma keystore Android remota para assinar o APK.
+A credencial deve permanecer protegida na conta Expo alisson98sb.
+
+Pendente: instalar e testar o APK em dispositivo Android real.

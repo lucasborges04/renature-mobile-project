@@ -1,0 +1,5 @@
+-- NAO APLICAVEL.
+-- O projeto utiliza MongoDB Atlas, um banco documental NoSQL.
+-- As colecoes sao criadas automaticamente pelo Mongoose.
+-- Consulte modelagem_do_banco/modelo_documental.md e
+-- scripts_mongodb/criar_indices.mongodb.js.

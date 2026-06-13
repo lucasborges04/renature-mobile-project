@@ -1,0 +1,9 @@
+- O codigo-fonte utiliza Expo/React Native, nao Flutter.
+- Nao incluir node_modules, .expo ou arquivos .env na entrega.
+- A API publicada usa Render e MongoDB Atlas.
+- O arquivo EXPO_PUBLIC_API_URL e publico e aponta para a API HTTPS.
+- MONGO_URI, JWT_SECRET e BREVO_API_KEY sao segredos e devem permanecer apenas
+  nos ambientes autorizados.
+- O package Android e br.edu.unisagrado.renature.
+- APK e AAB devem ser gerados pelos perfis EAS documentados em eas.json.
+- O AAB de producao deve permanecer associado a chave de assinatura do projeto.

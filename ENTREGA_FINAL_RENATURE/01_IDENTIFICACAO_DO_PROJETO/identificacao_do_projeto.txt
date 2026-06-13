@@ -1,0 +1,50 @@
+NOME DO PROJETO
+Renature App
+
+INTEGRANTES DO GRUPO
+- Alisson Barbosa Santana - Ciencia da Computacao
+- Eduardo dos Santos Martins - Ciencia da Computacao
+- Joao Renato Cardoso Marques - Ciencia da Computacao
+- Lucas Bucci Borges - Ciencia da Computacao
+- Victor Hugo de Deus Machado - Ciencia da Computacao
+
+TEMA DO PROJETO
+Renature: conscientizacao, engajamento ambiental e gamificacao da reciclagem.
+
+TIPO DE PROJETO
+Aplicativo mobile.
+
+BREVE DESCRICAO
+O Renature e uma plataforma digital focada em conscientizacao e engajamento
+ambiental. Sua funcionalidade principal e o rastreamento de acoes sustentaveis
+por meio de um sistema gamificado. O aplicativo permite que o usuario registre
+os itens que recicla no dia a dia, acumulando pontos de experiencia (XP),
+subindo de nivel e desbloqueando conquistas. Dessa forma, a rotina de
+preservacao do planeta transforma-se em uma jornada interativa e recompensadora.
+
+TECNOLOGIAS UTILIZADAS
+- Expo SDK 54 e React Native
+- React 19 e TypeScript
+- Node.js e Express
+- MongoDB Atlas e Mongoose
+- Axios
+- JSON Web Token (JWT)
+- bcrypt/bcryptjs
+- Expo SecureStore e AsyncStorage
+- Expo Camera
+- Brevo Transactional Email API
+- Render
+- EAS Build
+- Git e GitHub
+
+LINK DO PROJETO
+https://github.com/lucasborges04/renature-mobile-project
+
+OBSERVACOES IMPORTANTES
+- A API esta hospedada no Render e pode levar alguns segundos para iniciar
+  depois de um periodo de inatividade no plano gratuito.
+- O banco de dados utiliza MongoDB Atlas.
+- O aplicativo depende de conexao com a Internet.
+- A recuperacao de senha depende da API de e-mail da Brevo.
+- Segredos e credenciais nao fazem parte do codigo-fonte entregue.
+- O aplicativo foi desenvolvido com Expo/React Native, e nao com Flutter.

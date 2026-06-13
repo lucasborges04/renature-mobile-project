@@ -1,0 +1,30 @@
+INSTALACAO DO MOBILE
+cd renature-mobile-project-main
+npm install
+
+EXECUCAO DO MOBILE
+npx expo start --clear
+
+INSTALACAO DO BACKEND
+cd renature-backend
+npm install
+
+EXECUCAO DO BACKEND
+npm run dev
+
+EXECUCAO DO BACKEND EM PRODUCAO
+npm start
+
+INSTALACAO DO EAS CLI
+npm install --global eas-cli
+
+LOGIN NO EAS
+eas login
+
+GERAR APK RELEASE PARA TESTE INTERNO
+cd renature-mobile-project-main
+eas build --platform android --profile preview
+
+GERAR AAB RELEASE PARA GOOGLE PLAY
+cd renature-mobile-project-main
+eas build --platform android --profile production

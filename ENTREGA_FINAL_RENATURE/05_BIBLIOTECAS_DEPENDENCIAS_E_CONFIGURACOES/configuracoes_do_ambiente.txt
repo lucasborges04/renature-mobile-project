@@ -1,0 +1,22 @@
+MOBILE - renature-mobile-project-main/.env
+EXPO_PUBLIC_API_URL=https://renature-api.onrender.com/api
+
+BACKEND - variaveis configuradas no Render
+MONGO_URI=connection string privada do MongoDB Atlas
+JWT_SECRET=segredo aleatorio e privado para tokens JWT
+EMAIL_USER=remetente validado na Brevo
+BREVO_API_KEY=chave privada da API Brevo
+PORT=definida automaticamente pelo Render
+
+CONFIGURACAO ANDROID
+Nome: Renature
+Package: br.edu.unisagrado.renature
+Version name: 1.0.0
+Version code: 1
+Permissao declarada: CAMERA
+
+REGRAS
+- Nao incluir arquivos .env na entrega publica.
+- Nao inserir segredos em variaveis EXPO_PUBLIC_*.
+- Incrementar versionCode em cada nova versao Android.
+- Manter a chave de assinatura EAS protegida.
