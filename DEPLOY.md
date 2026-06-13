@@ -26,8 +26,8 @@ demonstracao no Render gratuito, proteja o banco com usuario e senha fortes.
 5. O Render detectara o arquivo `render.yaml`.
 6. Preencha as variaveis solicitadas:
    - `MONGO_URI`: connection string do Atlas.
-   - `EMAIL_USER`: e-mail usado na recuperacao de senha.
-   - `EMAIL_PASS`: senha de app desse e-mail.
+   - `EMAIL_USER`: remetente verificado na Brevo.
+   - `BREVO_API_KEY`: chave da API da Brevo.
 7. Confirme a criacao do servico gratuito.
 
 O `JWT_SECRET` sera gerado automaticamente pelo Render.

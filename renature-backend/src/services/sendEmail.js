@@ -1,53 +1,50 @@
-const nodemailer = require("nodemailer");
-const dns = require("node:dns").promises;
-
+const brevoApiUrl = "https://api.brevo.com/v3";
+const brevoApiKey = process.env.BREVO_API_KEY?.trim();
 const emailUser = process.env.EMAIL_USER?.trim();
-const emailPassword = process.env.EMAIL_PASS?.replace(/\s/g, "");
-const gmailHost = "smtp.gmail.com";
 
-if (!emailUser || !emailPassword) {
-  console.warn("EMAIL_USER ou EMAIL_PASS nao foram configurados.");
+if (!brevoApiKey || !emailUser) {
+  console.warn("BREVO_API_KEY ou EMAIL_USER nao foram configurados.");
 }
 
-const createTransporter = async () => {
-  const addresses = await dns.resolve4(gmailHost);
+const brevoRequest = async (path, options = {}) => {
+  const response = await fetch(`${brevoApiUrl}${path}`, {
+    ...options,
+    headers: {
+      accept: "application/json",
+      "api-key": brevoApiKey,
+      "content-type": "application/json",
+      ...options.headers,
+    },
+  });
 
-  if (addresses.length === 0) {
-    throw new Error("Nenhum endereco IPv4 foi encontrado para o Gmail SMTP.");
+  if (!response.ok) {
+    const responseBody = await response.text();
+    const error = new Error(`Brevo respondeu com status ${response.status}.`);
+    error.code = "BREVO_API_ERROR";
+    error.response = responseBody;
+    throw error;
   }
 
-  return nodemailer.createTransport({
-    host: addresses[0],
-    port: 465,
-    secure: true,
-    auth: {
-      user: emailUser,
-      pass: emailPassword,
-    },
-    tls: {
-      servername: gmailHost,
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 30000,
-  });
+  return response;
 };
 
 const sendEmail = async (options) => {
-  const transporter = await createTransporter();
-  const message = {
-    from: `"Equipe Renature" <${emailUser}>`,
-    to: options.email,
-    subject: options.subject,
-    text: options.message,
-  };
-
-  await transporter.sendMail(message);
+  await brevoRequest("/smtp/email", {
+    method: "POST",
+    body: JSON.stringify({
+      sender: {
+        name: "Equipe Renature",
+        email: emailUser,
+      },
+      to: [{ email: options.email }],
+      subject: options.subject,
+      textContent: options.message,
+    }),
+  });
 };
 
 const verifyEmailTransport = async () => {
-  const transporter = await createTransporter();
-  await transporter.verify();
+  await brevoRequest("/account");
 };
 
 module.exports = { sendEmail, verifyEmailTransport };

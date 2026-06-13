@@ -29,9 +29,9 @@ mongoose
       console.log(`Health check disponivel em /api/status`);
 
       verifyEmailTransport()
-        .then(() => console.log("Conexao SMTP com o Gmail validada."))
+        .then(() => console.log("API de e-mail da Brevo validada."))
         .catch((error) => {
-          console.error("Falha ao validar SMTP com o Gmail:", {
+          console.error("Falha ao validar API de e-mail da Brevo:", {
             code: error.code,
             command: error.command,
             response: error.response,
